@@ -61,6 +61,15 @@ import {
 import { apiFetch, API_URL } from "@/lib/utils";
 import { AppearanceSettings } from "@/components/AppearanceSettings";
 import { AzersilahLanding } from "@/components/AzersilahLanding";
+import { ClaudeWorkspace } from "@/components/ClaudeWorkspace";
+import {
+  AppLang,
+  TRANSLATIONS,
+  ExportLogItem,
+  getExportLogs,
+  recordExportLog,
+  triggerClientDownload,
+} from "@/lib/i18n";
 
 const CaspianField3D = dynamic(() => import("@/components/CaspianField3D"), {
   ssr: false,
@@ -73,11 +82,13 @@ const CaspianField3D = dynamic(() => import("@/components/CaspianField3D"), {
 
 type NavTab =
   | "command"
+  | "ai"
   | "data"
   | "vfm"
   | "pta"
   | "gaslift"
   | "export"
+  | "logs"
   | "rbac";
 
 const ROLE_BADGE_MAP: Record<string, "amber" | "emerald" | "cyan" | "purple" | "slate"> = {
@@ -132,11 +143,15 @@ export default function WellPerfEnterpriseApp() {
 
   const [activeTab, setActiveTab] = useState<NavTab>("command");
   const [selectedWell, setSelectedWell] = useState<string>("GL-01");
+  const [wellLoading, setWellLoading] = useState<boolean>(false);
+  const [lang, setLang] = useState<AppLang>("AZ");
+  const [exportLogs, setExportLogs] = useState<ExportLogItem[]>([]);
   const [showLanding, setShowLanding] = useState<boolean>(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [wellsMenuOpen, setWellsMenuOpen] = useState<boolean>(false);
   const [userMenuOpen, setUserMenuOpen] = useState<boolean>(false);
   const [bootstrap, setBootstrap] = useState<any | null>(null);
+  const t = TRANSLATIONS[lang];
   const [wellSeries, setWellSeries] = useState<any | null>(null);
   const [toast, setToast] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
 
@@ -194,19 +209,36 @@ export default function WellPerfEnterpriseApp() {
   }, [token]);
 
   useEffect(() => {
+    setExportLogs(getExportLogs());
+    const onLogged = () => setExportLogs(getExportLogs());
+    window.addEventListener("wp-export-logged", onLogged);
+    return () => window.removeEventListener("wp-export-logged", onLogged);
+  }, []);
+
+  useEffect(() => {
     if (!token || !selectedWell) return;
+    setWellLoading(true);
+    const startTs = Date.now();
     apiFetch(`/wells/${selectedWell}/timeseries`, {}, token)
       .then((data) => {
-        setWellSeries(data);
-        const lastSensor = data.sensors?.[data.sensors.length - 1];
-        if (lastSensor) {
-          setSimPwf(Math.round(lastSensor.dh_pressure_psia_mean || 2800));
-          setSimTemp(Number((lastSensor.dh_temperature_degf_mean || 185).toFixed(1)));
-          setSimAnnulus(Math.round(lastSensor.annulus_pressure_psia_mean || 1100));
-          setSimLiftGas(Math.round(lastSensor.gas_lift_rate_mscfd_mean || 850));
-        }
+        const elapsed = Date.now() - startTs;
+        const remain = Math.max(0, 320 - elapsed);
+        setTimeout(() => {
+          setWellSeries(data);
+          const lastSensor = data.sensors?.[data.sensors.length - 1];
+          if (lastSensor) {
+            setSimPwf(Math.round(lastSensor.dh_pressure_psia_mean || 2800));
+            setSimTemp(Number((lastSensor.dh_temperature_degf_mean || 185).toFixed(1)));
+            setSimAnnulus(Math.round(lastSensor.annulus_pressure_psia_mean || 1100));
+            setSimLiftGas(Math.round(lastSensor.gas_lift_rate_mscfd_mean || 850));
+          }
+          setWellLoading(false);
+        }, remain);
       })
-      .catch((err) => showNotice(err.message, "error"));
+      .catch((err) => {
+        setWellLoading(false);
+        showNotice(err.message, "error");
+      });
   }, [token, selectedWell]);
 
   useEffect(() => {
@@ -222,7 +254,7 @@ export default function WellPerfEnterpriseApp() {
   }, [token, selectedEventId]);
 
   useEffect(() => {
-    if (!token || activeTab !== "rbac") return;
+    if (!token || (activeTab !== "rbac" && activeTab !== "logs")) return;
     apiFetch("/rbac/overview", {}, token)
       .then(setRbacOverview)
       .catch((err) => showNotice(err.message, "error"));
@@ -428,6 +460,8 @@ export default function WellPerfEnterpriseApp() {
   if (showLanding) {
     return (
       <AzersilahLanding
+        lang={lang}
+        onChangeLang={setLang}
         onLaunchDashboard={(targetTab) => {
           if (targetTab) setActiveTab(targetTab);
           setShowLanding(false);
@@ -576,14 +610,15 @@ export default function WellPerfEnterpriseApp() {
   const currentWellProfile = bootstrap?.wells?.find((w: any) => w.well_name === selectedWell);
   const meta = bootstrap?.metadata;
 
-  const navItems: { id: NavTab; label: string; step?: string; icon: any }[] = [
-    { id: "command", label: "3D Digital Twin", icon: Box },
-    { id: "data", label: "Telemetry & QC", icon: Database },
-    { id: "vfm", label: "Virtual Metering", icon: Gauge },
-    { id: "pta", label: "Transient PTA", icon: Activity },
-    { id: "gaslift", label: "Gas-Lift Optimiser", icon: Flame },
-    { id: "export", label: "Reports & Export", icon: FileSpreadsheet },
-    { id: "rbac", label: "Access & Audit", icon: ShieldCheck },
+  const navItems: { id: NavTab; label: string; badge?: number | null; isAi?: boolean; icon: any }[] = [
+    { id: "command", label: t.nav_command, icon: Box },
+    { id: "ai", label: t.nav_ai, isAi: true, icon: Cpu },
+    { id: "data", label: t.nav_data, icon: Database },
+    { id: "vfm", label: t.nav_vfm, icon: Gauge },
+    { id: "pta", label: t.nav_pta, icon: Activity },
+    { id: "gaslift", label: t.nav_gaslift, icon: Flame },
+    { id: "export", label: t.nav_export, icon: FileSpreadsheet },
+    { id: "logs", label: t.nav_logs, badge: exportLogs.length, icon: ShieldCheck },
   ];
 
   return (
@@ -656,16 +691,44 @@ export default function WellPerfEnterpriseApp() {
                     : "text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
                 }`}
               >
-                <span
-                  className={`flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                    active
-                      ? "bg-white/15 text-white"
-                      : "bg-zinc-900 text-zinc-300 group-hover:bg-[#155EEF]/15 group-hover:text-[#3B82F6]"
-                  }`}
-                >
-                  <Icon className="size-4" />
-                </span>
-                {!isSidebarCollapsed && <span className="flex-1 text-left truncate">{item.label}</span>}
+                {item.isAi ? (
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg overflow-hidden border border-[#3B82F6]/50 bg-zinc-900">
+                    <img
+                      src="/ai-avatar.png"
+                      alt="AI"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                      className="w-full h-full object-cover"
+                    />
+                  </span>
+                ) : (
+                  <span
+                    className={`flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                      active
+                        ? "bg-white/15 text-white"
+                        : "bg-zinc-900 text-zinc-300 group-hover:bg-[#155EEF]/15 group-hover:text-[#3B82F6]"
+                    }`}
+                  >
+                    <Icon className="size-4" />
+                  </span>
+                )}
+                {!isSidebarCollapsed && (
+                  <>
+                    <span className="flex-1 text-left truncate">{item.label}</span>
+                    {item.badge !== undefined && item.badge !== null && (
+                      <span
+                        className={`ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold leading-none ${
+                          active
+                            ? "bg-white/20 text-white"
+                            : "bg-[#155EEF]/15 text-[#3B82F6]"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
               </button>
             );
           })}
@@ -775,25 +838,50 @@ export default function WellPerfEnterpriseApp() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
+            {/* Multi-Language Switcher (AZ / EN / RU) */}
+            <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900 p-0.5">
+              {(["AZ", "EN", "RU"] as const).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => setLang(l)}
+                  className={`px-2 py-1 rounded-md text-[11px] font-mono font-semibold transition ${
+                    lang === l
+                      ? "bg-[#155EEF] text-white shadow-2xs"
+                      : "text-zinc-400 hover:text-zinc-100"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+
             <AppearanceSettings />
 
             <button
               type="button"
               onClick={() => setShowLanding(true)}
-              className="inline-flex items-center h-9 gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 px-3 text-xs font-medium text-zinc-200 hover:bg-zinc-900 transition"
+              className="inline-flex items-center h-8 gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 px-3 text-xs font-medium text-zinc-200 hover:bg-zinc-900 transition"
             >
               <Home className="size-3.5 text-[#3B82F6]" />
-              <span className="hidden md:inline">Landing</span>
+              <span className="hidden md:inline">{t.landing_btn}</span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab("gaslift")}
-              className="inline-flex items-center h-9 gap-1.5 rounded-lg bg-[#155EEF] hover:bg-[#155EEF]/90 px-3.5 text-xs font-semibold text-white shadow-xs transition"
+              onClick={() => setActiveTab("ai")}
+              className="inline-flex items-center h-8 gap-1.5 rounded-lg bg-[#155EEF] hover:bg-[#155EEF]/90 px-3 text-xs font-semibold text-white shadow-xs transition"
             >
-              <Flame className="size-3.5" />
-              <span className="hidden md:inline">Optimiser (+$485k)</span>
+              <img
+                src="/ai-avatar.png"
+                alt="AI"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+                className="size-4 rounded-full object-cover"
+              />
+              <span className="hidden md:inline">Claude AI</span>
             </button>
 
             {/* User Avatar Dropdown (Exact nip.io Header Profile Button) */}
@@ -890,23 +978,37 @@ export default function WellPerfEnterpriseApp() {
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {wellLoading && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#155EEF]/15 text-[#3B82F6] text-[11px] font-mono border border-[#3B82F6]/30">
+                <span className="size-2 rounded-full bg-[#3B82F6] animate-ping" />
+                <span>{t.loading_well}</span>
+              </span>
+            )}
             {(bootstrap?.wells || []).map((w: any) => (
               <button
                 key={w.well_name}
                 type="button"
+                disabled={wellLoading}
                 onClick={() => setSelectedWell(w.well_name)}
                 className={`px-2 py-0.5 rounded-md text-[11px] font-mono transition ${
                   selectedWell === w.well_name
                     ? "bg-[#155EEF] text-white font-semibold shadow-2xs"
                     : "bg-zinc-900 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
-                }`}
+                } ${wellLoading ? "opacity-60 cursor-wait" : ""}`}
               >
                 {w.well_name}
               </button>
             ))}
           </div>
         </nav>
+
+        {/* Top Progress Shimmer Line during Well Telemetry Fetch */}
+        {wellLoading && (
+          <div className="h-0.5 w-full bg-zinc-900 overflow-hidden">
+            <div className="h-full w-1/2 bg-[#3B82F6] animate-pulse" />
+          </div>
+        )}
 
         {/* Toast Banner */}
         {toast && (
@@ -1001,10 +1103,26 @@ export default function WellPerfEnterpriseApp() {
             </div>
 
           {/* ==================================================== */}
+          {/* MODULE AI: CLAUDE INTERFACE WORKSPACE                */}
+          {/* ==================================================== */}
+          {activeTab === "ai" && (
+            <div className="gsap-stagger">
+              <ClaudeWorkspace
+                lang={lang}
+                userEmail={user.email}
+                wells={bootstrap?.wells || []}
+                latestPredictions={bootstrap?.latestPredictions || []}
+                ptaEvents={bootstrap?.ptaEvents || []}
+                liftGasRanking={meta?.lift_gas_ranking || []}
+              />
+            </div>
+          )}
+
+          {/* ==================================================== */}
           {/* MODULE 00: 3D SUBSURFACE & OVERVIEW                  */}
           {/* ==================================================== */}
           {activeTab === "command" && (
-            <div className="space-y-6">
+            <div className={`space-y-6 transition-opacity duration-300 ${wellLoading ? "opacity-55 pointer-events-none" : "opacity-100"}`}>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-8">
                   <CaspianField3D
@@ -2272,7 +2390,17 @@ export default function WellPerfEnterpriseApp() {
                       href={`${API_URL}/exports/download/vfm_daily_predictions.xlsx`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 rounded-md bg-zinc-100 text-zinc-950 font-medium text-xs hover:bg-zinc-200 transition"
+                      onClick={() =>
+                        recordExportLog({
+                          filename: "vfm_daily_predictions.xlsx",
+                          format: "XLSX",
+                          module: "DELIVERABLES",
+                          sizeKb: "412.4 KB",
+                          user: user.email,
+                          downloadUrl: `${API_URL}/exports/download/vfm_daily_predictions.xlsx`,
+                        })
+                      }
+                      className="flex items-center justify-between p-3 rounded-lg bg-[#155EEF] text-white font-medium text-xs hover:bg-[#155EEF]/90 transition"
                     >
                       <span className="flex items-center gap-2 font-mono">
                         <FileSpreadsheet className="w-4 h-4" />
@@ -2284,7 +2412,17 @@ export default function WellPerfEnterpriseApp() {
                       href={`${API_URL}/exports/download/vfm_report.html`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 rounded-md border border-zinc-800 bg-zinc-900 text-zinc-200 font-medium text-xs hover:bg-zinc-800 transition"
+                      onClick={() =>
+                        recordExportLog({
+                          filename: "vfm_report.html",
+                          format: "HTML",
+                          module: "DELIVERABLES",
+                          sizeKb: "1,840.0 KB",
+                          user: user.email,
+                          downloadUrl: `${API_URL}/exports/download/vfm_report.html`,
+                        })
+                      }
+                      className="flex items-center justify-between p-3 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-200 font-medium text-xs hover:bg-zinc-800 transition"
                     >
                       <span className="font-mono">vfm_report.html (Offline Plotly Bundle)</span>
                       <Download className="w-3.5 h-3.5" />
@@ -2294,7 +2432,7 @@ export default function WellPerfEnterpriseApp() {
 
                 <Card>
                   <CardHeader className="border-b border-zinc-800">
-                    <Badge variant="default" className="w-fit mb-1 font-mono">Phase 2 · 30 Points</Badge>
+                    <Badge variant="default" className="w-fit mb-1 font-mono">Phase 2 · PTA</Badge>
                     <CardTitle className="text-sm">Automated PTA Deliverables</CardTitle>
                     <CardDescription>
                       Horner slope, skin, effective oil permeability (md), ΔPskin (psi), IARF quality ratings, and all diagnostic curves for 6 shut-ins.
@@ -2305,7 +2443,17 @@ export default function WellPerfEnterpriseApp() {
                       href={`${API_URL}/exports/download/pta_reservoir_properties.xlsx`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 rounded-md bg-zinc-100 text-zinc-950 font-medium text-xs hover:bg-zinc-200 transition"
+                      onClick={() =>
+                        recordExportLog({
+                          filename: "pta_reservoir_properties.xlsx",
+                          format: "XLSX",
+                          module: "DELIVERABLES",
+                          sizeKb: "128.7 KB",
+                          user: user.email,
+                          downloadUrl: `${API_URL}/exports/download/pta_reservoir_properties.xlsx`,
+                        })
+                      }
+                      className="flex items-center justify-between p-3 rounded-lg bg-[#155EEF] text-white font-medium text-xs hover:bg-[#155EEF]/90 transition"
                     >
                       <span className="flex items-center gap-2 font-mono">
                         <FileSpreadsheet className="w-4 h-4" />
@@ -2317,7 +2465,17 @@ export default function WellPerfEnterpriseApp() {
                       href={`${API_URL}/exports/download/pta_report.html`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 rounded-md border border-zinc-800 bg-zinc-900 text-zinc-200 font-medium text-xs hover:bg-zinc-800 transition"
+                      onClick={() =>
+                        recordExportLog({
+                          filename: "pta_report.html",
+                          format: "HTML",
+                          module: "DELIVERABLES",
+                          sizeKb: "1,520.0 KB",
+                          user: user.email,
+                          downloadUrl: `${API_URL}/exports/download/pta_report.html`,
+                        })
+                      }
+                      className="flex items-center justify-between p-3 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-200 font-medium text-xs hover:bg-zinc-800 transition"
                     >
                       <span className="font-mono">pta_report.html (Offline Plotly Bundle)</span>
                       <Download className="w-3.5 h-3.5" />
@@ -2329,23 +2487,136 @@ export default function WellPerfEnterpriseApp() {
           )}
 
           {/* ==================================================== */}
-          {/* MODULE 06: RBAC & MONGODB ATLAS AUDIT LOGS           */}
+          {/* MODULE 06: UNIFIED EXPORT LOGS & SYSTEM AUDIT TRAIL  */}
           {/* ==================================================== */}
-          {activeTab === "rbac" && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-base font-semibold text-zinc-100">
-                  06 · Role-Based Access Control (RBAC) & MongoDB Atlas Audit Log
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  Every user session, role switch, VFM simulation, PTA override, and denied permission attempt is logged in MongoDB Atlas.
-                </p>
+          {(activeTab === "logs" || activeTab === "rbac") && (
+            <div className="space-y-6 gsap-stagger">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-base font-semibold text-zinc-100">{t.logs_title}</h2>
+                  <p className="text-xs text-zinc-400">
+                    Unified log repository tracking all exported deliverables, Claude AI artifacts, 3D telemetry exports & RBAC system operations.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    triggerClientDownload(
+                      `wellperf_audit_export_logs_${Date.now()}.json`,
+                      JSON.stringify({ exportLogs, auditLogs: rbacOverview?.auditLogs || [] }, null, 2),
+                      "application/json",
+                      "JSON",
+                      "DELIVERABLES",
+                      user.email
+                    );
+                  }}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export All Logs (.JSON)</span>
+                </Button>
               </div>
 
+              {/* 1. Exported Files History Log Table */}
+              <Card>
+                <CardHeader className="pb-2.5 border-b border-zinc-800 flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-sm">{t.logs_exports_tab}</CardTitle>
+                    <CardDescription>
+                      Every file exported from Deliverables, Claude AI Chat, or 3D Digital Twin
+                    </CardDescription>
+                  </div>
+                  <Badge variant="cyan" className="font-mono">
+                    {exportLogs.length} Files Logged
+                  </Badge>
+                </CardHeader>
+                <CardContent className="p-0 max-h-[340px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Timestamp</TableHead>
+                        <TableHead>File Name</TableHead>
+                        <TableHead>Format</TableHead>
+                        <TableHead>Source Module</TableHead>
+                        <TableHead>Size</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {exportLogs.map((exp) => (
+                        <TableRow key={exp.id}>
+                          <TableCell className="font-mono text-[11px] text-zinc-400">
+                            {exp.timestamp}
+                          </TableCell>
+                          <TableCell className="font-mono font-semibold text-zinc-100">
+                            {exp.filename}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="emerald" className="font-mono">
+                              {exp.format}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="cyan" className="font-mono">
+                              {exp.module}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-zinc-300">
+                            {exp.sizeKb}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-zinc-400">
+                            {exp.user}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {exp.downloadUrl ? (
+                              <a
+                                href={
+                                  exp.downloadUrl.startsWith("http")
+                                    ? exp.downloadUrl
+                                    : `${API_URL}${exp.downloadUrl.replace("/api", "")}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-200 hover:bg-zinc-800"
+                              >
+                                <Download className="w-3 h-3" />
+                                <span>Download</span>
+                              </a>
+                            ) : exp.content ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  triggerClientDownload(
+                                    exp.filename,
+                                    exp.content!,
+                                    "text/plain;charset=utf-8;",
+                                    exp.format,
+                                    exp.module,
+                                    user.email
+                                  )
+                                }
+                                className="inline-flex items-center gap-1 rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-200 hover:bg-zinc-800"
+                              >
+                                <Download className="w-3 h-3" />
+                                <span>Re-Export</span>
+                              </button>
+                            ) : (
+                              <span className="text-xs text-zinc-500">Logged</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+
+              {/* 2. System & RBAC Audit Trail + Role Switcher */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <Card className="lg:col-span-6">
+                <Card className="lg:col-span-5">
                   <CardHeader className="pb-2 border-b border-zinc-800">
-                    <CardTitle className="text-sm">Registered Accounts & Permissions</CardTitle>
+                    <CardTitle className="text-sm">RBAC Profiles & Permissions</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
                     <Table>
@@ -2353,7 +2624,6 @@ export default function WellPerfEnterpriseApp() {
                         <TableRow>
                           <TableHead>User</TableHead>
                           <TableHead>Role</TableHead>
-                          <TableHead>Scopes</TableHead>
                           <TableHead className="text-right">Switch</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -2366,9 +2636,6 @@ export default function WellPerfEnterpriseApp() {
                             </TableCell>
                             <TableCell>
                               <Badge variant={ROLE_BADGE_MAP[u.role] || "slate"}>{u.role}</Badge>
-                            </TableCell>
-                            <TableCell className="text-[11px] font-mono text-zinc-400">
-                              {(u.permissions || []).length} scopes
                             </TableCell>
                             <TableCell className="text-right">
                               <Button
@@ -2386,9 +2653,9 @@ export default function WellPerfEnterpriseApp() {
                   </CardContent>
                 </Card>
 
-                <Card className="lg:col-span-6">
+                <Card className="lg:col-span-7">
                   <CardHeader className="pb-2 border-b border-zinc-800">
-                    <CardTitle className="text-sm">MongoDB Atlas Audit Trail</CardTitle>
+                    <CardTitle className="text-sm">{t.logs_audit_tab}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0 max-h-[420px] overflow-y-auto">
                     <Table>
@@ -2412,7 +2679,7 @@ export default function WellPerfEnterpriseApp() {
                               </Badge>
                             </TableCell>
                             <TableCell className="text-xs text-zinc-300">{log.userName}</TableCell>
-                            <TableCell className="font-mono text-[11px] text-zinc-400 max-w-[220px] truncate">
+                            <TableCell className="font-mono text-[11px] text-zinc-400 max-w-[240px] truncate">
                               {JSON.stringify(log.details)}
                             </TableCell>
                           </TableRow>

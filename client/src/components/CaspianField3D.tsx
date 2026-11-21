@@ -2,8 +2,10 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Badge } from "@/components/ui/primitives";
-import { Compass, RotateCw, Layers, ZoomIn, ZoomOut, Flame, Maximize2, Minimize2 } from "lucide-react";
+import { Compass, RotateCw, Layers, ZoomIn, ZoomOut, Flame, Maximize2, Minimize2, Download } from "lucide-react";
+import { triggerClientDownload } from "@/lib/i18n";
 
 interface CaspianField3DProps {
   wells: any[];
@@ -321,6 +323,90 @@ export default function CaspianField3D({
     );
     subseaManifold.position.set(0, -0.5, 0);
     platformGroup.add(subseaManifold);
+
+    // Living Quarters Multi-Story Module with Illuminated Cabin Windows
+    const quartersBlock = new THREE.Mesh(
+      new THREE.BoxGeometry(2.1, 1.45, 2.4),
+      new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.35, roughness: 0.45 })
+    );
+    quartersBlock.position.set(2.0, 7.85, -1.1);
+    platformGroup.add(quartersBlock);
+
+    for (let row = 0; row < 2; row++) {
+      for (let col = 0; col < 4; col++) {
+        const winMesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.28, 0.2),
+          new THREE.MeshBasicMaterial({ color: 0xfef08a, side: THREE.DoubleSide })
+        );
+        winMesh.position.set(1.25 + col * 0.45, 7.6 + row * 0.5, -2.32);
+        platformGroup.add(winMesh);
+      }
+    }
+
+    // Dual Offshore Pedestal Cranes (Port & Starboard) with Lattice Booms & Cables
+    const craneMat = new THREE.MeshStandardMaterial({ color: 0xf97316, metalness: 0.5, roughness: 0.35 });
+    [
+      { x: -3.0, z: 2.1, rotY: 0.6 },
+      { x: 2.8, z: 2.1, rotY: -0.7 },
+    ].forEach((cr) => {
+      const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 1.2, 12), craneMat);
+      ped.position.set(cr.x, 7.6, cr.z);
+      platformGroup.add(ped);
+
+      const boomPath = new THREE.LineCurve3(
+        new THREE.Vector3(cr.x, 8.1, cr.z),
+        new THREE.Vector3(cr.x + Math.cos(cr.rotY) * 3.4, 10.4, cr.z + Math.sin(cr.rotY) * 2.8)
+      );
+      const boomTube = new THREE.Mesh(new THREE.TubeGeometry(boomPath, 6, 0.08, 6, false), craneMat);
+      platformGroup.add(boomTube);
+    });
+
+    // Turbine Exhaust Stacks & Radar Communications Mast
+    [-0.4, 0.2, 0.8].forEach((sx) => {
+      const stack = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.11, 0.14, 1.8, 10),
+        steelMat
+      );
+      stack.position.set(1.5 + sx, 8.8, 0.8);
+      platformGroup.add(stack);
+    });
+
+    // Optional GLB Model Enhancement Loader (loads /models/offshore-rig.glb if present)
+    try {
+      const gltfLoader = new GLTFLoader();
+      gltfLoader.load(
+        "/models/offshore-rig.glb",
+        (gltf) => {
+          gltf.scene.scale.set(1.5, 1.5, 1.5);
+          gltf.scene.position.set(0, 7.2, 0);
+          platformGroup.add(gltf.scene);
+        },
+        undefined,
+        () => {}
+      );
+    } catch {}
+
+    // Animated Subsea ROV Drone inspecting Seabed Manifold
+    const rovGroup = new THREE.Group();
+    const rovBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.75, 0.45, 0.55),
+      new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.4, roughness: 0.3 })
+    );
+    rovGroup.add(rovBody);
+    const rovBeam = new THREE.Mesh(
+      new THREE.ConeGeometry(0.85, 2.6, 12, 1, true),
+      new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.18,
+        side: THREE.DoubleSide,
+      })
+    );
+    rovBeam.rotation.z = Math.PI / 2;
+    rovBeam.position.set(1.5, 0, 0);
+    rovGroup.add(rovBeam);
+    rovGroup.position.set(-4.5, 0.3, 2.5);
+    world.add(rovGroup);
 
     world.add(platformGroup);
 
@@ -721,10 +807,14 @@ export default function CaspianField3D({
       }
       seaPos.needsUpdate = true;
 
-      // Animate Gas Flare Flicker
+      // Animate Gas Flare Flicker & Subsea ROV Patrol
       const flicker = 0.88 + Math.sin(clock * 7.5) * 0.16 + Math.cos(clock * 13.0) * 0.1;
       flareCone.scale.set(flicker, 0.9 + Math.sin(clock * 9) * 0.22, flicker);
       flareLight.intensity = 3.5 + Math.sin(clock * 11) * 1.2;
+
+      rovGroup.position.x = Math.cos(clock * 0.45) * 4.8;
+      rovGroup.position.z = Math.sin(clock * 0.45) * 3.6;
+      rovGroup.rotation.y = -clock * 0.45 + Math.PI / 2;
 
       // Animate Upward Production Slugs along 3D directional curves
       prodParticles.forEach((p) => {
@@ -892,6 +982,32 @@ export default function CaspianField3D({
             className="p-1 rounded-md text-zinc-400 hover:text-zinc-100"
           >
             <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            title="Export 3D Wellbore Telemetry (.CSV)"
+            onClick={() => {
+              const header = "well_name,tvd_ft,oil_rate_stbd,water_cut_pct,skin\n";
+              const rows = Object.entries(WELL_TRAJECTORIES)
+                .map(([w, tr]) => {
+                  const pr = latestPredictions.find((p) => p.well_name === w);
+                  const pt = ptaEvents.find((e) => e.well_name === w);
+                  return `${w},${tr.tvd},${Math.round(pr?.oil_rate_stbd || 1400)},${(
+                    (pr?.water_cut_frac || 0.32) * 100
+                  ).toFixed(1)},${pt?.properties?.skin ?? "N/A"}`;
+                })
+                .join("\n");
+              triggerClientDownload(
+                `caspian_3d_twin_telemetry_${Date.now()}.csv`,
+                header + rows,
+                "text/csv;charset=utf-8;",
+                "CSV",
+                "3D_TWIN"
+              );
+            }}
+            className="p-1 rounded-md text-zinc-400 hover:text-emerald-400 transition"
+          >
+            <Download className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"

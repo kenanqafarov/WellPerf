@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AgentationWrapper } from "@/components/AgentationWrapper";
-import { WellPerfBot } from "@/components/WellPerfBot";
 
 export const metadata: Metadata = {
-  title: "WellPerf Enterprise | SOCAR Hackathon 2026 — VFM + PTA + 3D Digital Twin",
+  title: "WellPerf Enterprise | Autonomous Well Surveillance, VFM, PTA & 3D Twin",
   description:
-    "Intelligent Well Performance Analysis Platform: Physics-Constrained Virtual Flow Metering (VFM), Automated Pressure Transient Analysis (PTA), 3D Subsurface Twin & Role-Based Access Control.",
+    "Intelligent Well Performance Analysis Platform: Physics-Constrained Virtual Flow Metering (VFM), Automated Pressure Transient Analysis (PTA), 3D Subsurface Twin & Claude AI Engineering Workspace.",
 };
 
 export default function RootLayout({
@@ -16,9 +15,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 antialiased selection:bg-[#023F46] selection:text-white">
+      <body className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 antialiased selection:bg-[#155EEF] selection:text-white">
         {children}
-        <WellPerfBot />
         <AgentationWrapper />
       </body>
     </html>

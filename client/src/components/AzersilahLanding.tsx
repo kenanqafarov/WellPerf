@@ -2,17 +2,20 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { ArrowUpRight, Play, Layers, Activity, Flame, Gauge, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Play, ShieldCheck } from "lucide-react";
+import { AppLang, TRANSLATIONS } from "@/lib/i18n";
 
 interface AzersilahLandingProps {
-  onLaunchDashboard: (targetTab?: "command" | "data" | "vfm" | "pta" | "gaslift" | "export" | "rbac") => void;
+  lang: AppLang;
+  onChangeLang: (lang: AppLang) => void;
+  onLaunchDashboard: (targetTab?: "command" | "ai" | "data" | "vfm" | "pta" | "gaslift" | "export" | "logs" | "rbac") => void;
 }
 
 const ROTATING_WORDS = ["METER", "OPTIMIZE", "PREDICT", "CONTROL"];
 
-export function AzersilahLanding({ onLaunchDashboard }: AzersilahLandingProps) {
+export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: AzersilahLandingProps) {
   const [wordIndex, setWordIndex] = useState(0);
-  const [lang, setLang] = useState<"EN" | "AZ">("AZ");
+  const t = TRANSLATIONS[lang];
   const heroCanvasRef = useRef<HTMLCanvasElement>(null);
   const landingRootRef = useRef<HTMLDivElement>(null);
 
@@ -250,15 +253,23 @@ export function AzersilahLanding({ onLaunchDashboard }: AzersilahLandingProps) {
       {/* STICKY 100dvh HERO — EXACT AZERSILAH.COM 2×2 GRID & CENTER '+' RETICLE */}
       {/* ===================================================================== */}
       <header className="sticky inset-0 z-10 w-full isolate h-dvh overflow-hidden bg-[#021824] text-white">
-        {/* Animated Subsurface & Offshore Telemetry Motion Canvas */}
+        {/* AI-Generated Caspian Offshore Rig Backdrop + Animated Subsurface Telemetry Canvas */}
+        <img
+          src="/caspian-rig.png"
+          alt="Caspian Offshore Rig"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+          className="absolute inset-0 w-full h-full object-cover opacity-35 mix-blend-luminosity z-0"
+        />
         <canvas
           ref={heroCanvasRef}
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          className="absolute inset-0 w-full h-full object-cover opacity-85 z-0"
         />
         <div className="absolute inset-0 bg-black/25 z-0" />
 
-        {/* Exact Azersilah Top Bar: Brand Logo Left | Vertical Slide-Up Nav Middle | Lang & Enter Dashboard Right */}
-        <div className="absolute top-0 inset-x-0 z-30 flex justify-between items-center md:items-start px-6 md:px-10 pt-5 md:pt-7">
+        {/* Exact Azersilah Top Bar: Brand Logo Left | Horizontal Side-by-Side Links Middle | AZ/EN/RU & Enter Dashboard Right */}
+        <div className="absolute top-0 inset-x-0 z-30 flex justify-between items-center px-6 md:px-10 pt-5 md:pt-7">
           {/* Brand Logo */}
           <button
             type="button"
@@ -278,21 +289,21 @@ export function AzersilahLanding({ onLaunchDashboard }: AzersilahLandingProps) {
             </div>
           </button>
 
-          {/* Vertical Stacked Slide-Up Links (Exact Azersilah group-hover:-translate-y-full effect) */}
-          <ul className="hidden md:flex flex-col gap-1 text-xs xl:text-sm font-medium tracking-[-0.03em]">
+          {/* Horizontal Side-by-Side Links (Agentation Feedback: "düzəlt bunu yanaşı dursun") */}
+          <ul className="hidden lg:flex flex-row items-center gap-6 xl:gap-8 text-xs xl:text-sm font-medium tracking-[-0.02em]">
             {[
-              { label: lang === "AZ" ? "HAQQIMIZDA" : "ABOUT PLATFORM", href: "#about" },
-              { label: lang === "AZ" ? "4 ƏSAS MODUL" : "CORE MODULES", href: "#products" },
-              { label: lang === "AZ" ? "TEXNİKİ ÜSTÜNLÜK" : "OUR EDGE", href: "#our-edge" },
-              { label: lang === "AZ" ? "VALIDASİYA" : "VALIDATION", href: "#supply" },
-              { label: lang === "AZ" ? "İDARƏETMƏ PANELİ" : "LIVE WORKBENCH", action: () => onLaunchDashboard("command") },
+              { label: t.land_about, href: "#about" },
+              { label: t.land_modules, href: "#products" },
+              { label: t.land_edge, href: "#our-edge" },
+              { label: t.land_validation, href: "#supply" },
+              { label: "WELLPERF AI", action: () => onLaunchDashboard("ai") },
             ].map((item, idx) => (
               <li key={idx} className="group overflow-hidden">
                 {item.action ? (
                   <button
                     type="button"
                     onClick={item.action}
-                    className="flex items-center gap-2 relative py-0.5 text-cyan-300"
+                    className="flex items-center gap-1.5 relative py-1 text-cyan-300"
                   >
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-mono">[</span>
                     <div className="relative overflow-hidden">
@@ -307,7 +318,7 @@ export function AzersilahLanding({ onLaunchDashboard }: AzersilahLandingProps) {
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-mono">]</span>
                   </button>
                 ) : (
-                  <a href={item.href} className="flex items-center gap-2 relative py-0.5">
+                  <a href={item.href} className="flex items-center gap-1.5 relative py-1">
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-mono text-cyan-400">[</span>
                     <div className="relative overflow-hidden">
                       <span className="invisible block uppercase">{item.label}</span>
@@ -325,21 +336,28 @@ export function AzersilahLanding({ onLaunchDashboard }: AzersilahLandingProps) {
             ))}
           </ul>
 
-          {/* Right Controls: Language Switcher + Direct Dashboard Launch Button */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setLang((l) => (l === "AZ" ? "EN" : "AZ"))}
-              className="border border-white/25 hover:border-white px-2.5 py-1.5 text-xs font-mono uppercase tracking-wider transition"
-            >
-              {lang}
-            </button>
+          {/* Right Controls: AZ / EN / RU Multi-Language Switcher + Direct Dashboard Launch Button */}
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center border border-white/25 bg-black/30 backdrop-blur-sm">
+              {(["AZ", "EN", "RU"] as const).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => onChangeLang(l)}
+                  className={`px-2 py-1.5 text-xs font-mono uppercase transition ${
+                    lang === l ? "bg-white text-[#021824] font-bold" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               onClick={() => onLaunchDashboard("command")}
               className="bg-white text-[#021824] hover:bg-cyan-400 hover:text-[#021824] px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg"
             >
-              <span>{lang === "AZ" ? "DASHBOARDA KEÇ" : "LAUNCH DASHBOARD"}</span>
+              <span>{t.land_dashboard}</span>
               <ArrowUpRight className="w-4 h-4" />
             </button>
           </div>
