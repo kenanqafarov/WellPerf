@@ -5,37 +5,37 @@
 @layer base {
   :root,
   html.light {
-    /* Awwwards Clean Studio Light Palette */
-    --wp-canvas: 243 245 248;
+    /* Exact 13.140.158.231.nip.io Light Palette */
+    --wp-canvas: 248 250 252;
     --wp-z-950: 255 255 255;
     --wp-z-900: 241 245 249;
     --wp-z-800: 226 232 240;
-    --wp-z-700: 148 163 184;
+    --wp-z-700: 203 213 225;
     --wp-z-600: 100 116 139;
-    --wp-z-500: 71 85 105;
-    --wp-z-400: 51 65 85;
-    --wp-z-300: 30 41 59;
-    --wp-z-200: 15 23 42;
-    --wp-z-100: 9 13 22;
+    --wp-z-500: 100 116 139;
+    --wp-z-400: 71 85 105;
+    --wp-z-300: 51 65 85;
+    --wp-z-200: 30 41 59;
+    --wp-z-100: 15 23 42;
     --wp-z-50: 2 6 23;
-    --radius: 0.75rem;
+    --radius: 0.625rem;
   }
 
   html.dark {
-    /* Dribbble / Awwwards Industrial Command Dark Palette (Obsidian Carbon + Electric Cyan/Emerald) */
-    --wp-canvas: 8 10 15;
-    --wp-z-950: 14 17 24;
-    --wp-z-900: 21 26 36;
-    --wp-z-800: 33 41 56;
-    --wp-z-700: 51 65 85;
+    /* Exact 13.140.158.231.nip.io Dark Palette */
+    --wp-canvas: 11 15 25;
+    --wp-z-950: 17 24 39;
+    --wp-z-900: 26 35 53;
+    --wp-z-800: 38 51 77;
+    --wp-z-700: 59 130 246;
     --wp-z-600: 100 116 139;
     --wp-z-500: 148 163 184;
-    --wp-z-400: 186 199 218;
-    --wp-z-300: 214 223 237;
-    --wp-z-200: 235 240 248;
-    --wp-z-100: 248 250 252;
+    --wp-z-400: 168 181 202;
+    --wp-z-300: 203 213 225;
+    --wp-z-200: 226 232 240;
+    --wp-z-100: 243 246 252;
     --wp-z-50: 255 255 255;
-    --radius: 0.75rem;
+    --radius: 0.625rem;
   }
 }
 

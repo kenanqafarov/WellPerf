@@ -9,12 +9,16 @@ import {
   Activity,
   ArrowRight,
   CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Cpu,
   Database,
   Download,
   FileSpreadsheet,
   Flame,
   Gauge,
+  Home,
   KeyRound,
   LogOut,
   Play,
@@ -56,6 +60,7 @@ import {
 } from "@/components/ui/primitives";
 import { apiFetch, API_URL } from "@/lib/utils";
 import { AppearanceSettings } from "@/components/AppearanceSettings";
+import { AzersilahLanding } from "@/components/AzersilahLanding";
 
 const CaspianField3D = dynamic(() => import("@/components/CaspianField3D"), {
   ssr: false,
@@ -127,6 +132,10 @@ export default function WellPerfEnterpriseApp() {
 
   const [activeTab, setActiveTab] = useState<NavTab>("command");
   const [selectedWell, setSelectedWell] = useState<string>("GL-01");
+  const [showLanding, setShowLanding] = useState<boolean>(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [wellsMenuOpen, setWellsMenuOpen] = useState<boolean>(false);
+  const [userMenuOpen, setUserMenuOpen] = useState<boolean>(false);
   const [bootstrap, setBootstrap] = useState<any | null>(null);
   const [wellSeries, setWellSeries] = useState<any | null>(null);
   const [toast, setToast] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
@@ -414,7 +423,24 @@ export default function WellPerfEnterpriseApp() {
   }, [bootstrap]);
 
   // ==========================================================
-  // AUTH SCREEN — Minimalist shadcn/ui Engineering Workbench
+  // AZERSILAH.COM ARCHITECTURAL LANDING PAGE
+  // ==========================================================
+  if (showLanding) {
+    return (
+      <AzersilahLanding
+        onLaunchDashboard={(targetTab) => {
+          if (targetTab) setActiveTab(targetTab);
+          setShowLanding(false);
+          if (!token) {
+            handleLogin("admin@socar.az");
+          }
+        }}
+      />
+    );
+  }
+
+  // ==========================================================
+  // AUTH SCREEN
   // ==========================================================
   if (!token || !user) {
     return (
@@ -561,129 +587,326 @@ export default function WellPerfEnterpriseApp() {
   ];
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex flex-col md:flex-row">
-      {/* Left Fixed Engineering Sidebar */}
-      <aside className="hidden md:flex md:w-56 shrink-0 border-r border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md flex-col justify-between">
-        <div>
-          {/* Brand Header */}
-          <div className="h-12 px-4 border-b border-zinc-800/80 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-cyan-500 text-zinc-950 flex items-center justify-center font-mono font-bold text-xs shadow-sm">
+    <div className="flex w-full min-h-screen overflow-x-hidden bg-[rgb(var(--wp-canvas))] text-zinc-100 transition-colors duration-200">
+      {/* ================================================================= */}
+      {/* EXACT 13.140.158.231.nip.io COLLAPSIBLE SIDEBAR (Layout-1HBEUZVB) */}
+      {/* ================================================================= */}
+      <aside
+        className={`fixed top-0 left-0 z-40 hidden md:flex h-screen flex-col border-r border-zinc-800 bg-zinc-950 text-zinc-100 transition-all duration-300 select-none ${
+          isSidebarCollapsed ? "w-[4.5rem]" : "w-[15.875rem]"
+        }`}
+      >
+        {/* Sidebar Top Header */}
+        <div
+          className={`flex h-14 items-center border-b border-zinc-800 px-4 ${
+            isSidebarCollapsed ? "justify-center" : "justify-between"
+          }`}
+        >
+          {!isSidebarCollapsed && (
+            <button
+              type="button"
+              onClick={() => setShowLanding(true)}
+              className="flex items-center gap-2.5 overflow-hidden text-left"
+            >
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#155EEF] text-white font-bold text-xs shadow-xs">
                 WP
               </div>
-              <span className="font-semibold text-sm tracking-tight text-zinc-100">WellPerf</span>
-            </div>
-            <span className="h-2 w-2 rounded-full bg-emerald-400" title="Live Telemetry Connected" />
-          </div>
-
-          {/* Well Selector Section */}
-          <div className="p-3 border-b border-zinc-800/80">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">
-              Wells (10)
-            </div>
-            <div className="grid grid-cols-5 gap-1">
-              {(bootstrap?.wells || []).map((w: any) => (
-                <button
-                  key={w.well_name}
-                  onClick={() => setSelectedWell(w.well_name)}
-                  className={`py-1 rounded-md text-[11px] font-mono transition ${
-                    selectedWell === w.well_name
-                      ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
-                      : "bg-zinc-900/80 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
-                  }`}
-                >
-                  {w.well_name.replace("GL-", "")}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Primary Navigation */}
-          <nav className="p-2 space-y-0.5">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition ${
-                    active
-                      ? "bg-cyan-500/15 text-cyan-400 font-semibold border border-cyan-500/30"
-                      : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60"
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${active ? "text-cyan-400" : "text-zinc-500"}`} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+              <div className="truncate">
+                <div className="text-sm font-bold tracking-tight text-zinc-100 leading-none">
+                  WellPerf
+                </div>
+                <div className="text-[10px] text-zinc-400 mt-0.5">Enterprise Suite</div>
+              </div>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsSidebarCollapsed((c) => !c)}
+            title={isSidebarCollapsed ? "Menyunu aç" : "Menyunu yığ"}
+            className="flex size-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 shrink-0 transition-colors"
+          >
+            {isSidebarCollapsed ? (
+              <ChevronRight className="size-4" />
+            ) : (
+              <ChevronLeft className="size-4" />
+            )}
+          </button>
         </div>
 
-        {/* Bottom Profile Box */}
-        <div className="p-3 border-t border-zinc-800/80 space-y-2 bg-zinc-950/50">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-zinc-200 truncate">{user.name}</span>
-            <Badge variant={ROLE_BADGE_MAP[user.role] || "slate"} className="text-[9px]">
-              {user.role.split("_")[0]}
-            </Badge>
+        {/* Sidebar Scrollable Nav Items */}
+        <div
+          className={`flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-1 ${
+            isSidebarCollapsed ? "px-2" : "px-3"
+          }`}
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id)}
+                title={isSidebarCollapsed ? item.label : undefined}
+                className={`group flex w-full items-center rounded-xl py-2.5 text-sm font-medium transition-all cursor-pointer ${
+                  isSidebarCollapsed ? "justify-center px-0 gap-0" : "justify-start px-3 gap-3"
+                } ${
+                  active
+                    ? "bg-[#155EEF] text-white shadow-xs font-semibold"
+                    : "text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
+                }`}
+              >
+                <span
+                  className={`flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                    active
+                      ? "bg-white/15 text-white"
+                      : "bg-zinc-900 text-zinc-300 group-hover:bg-[#155EEF]/15 group-hover:text-[#3B82F6]"
+                  }`}
+                >
+                  <Icon className="size-4" />
+                </span>
+                {!isSidebarCollapsed && <span className="flex-1 text-left truncate">{item.label}</span>}
+              </button>
+            );
+          })}
+
+          {/* Expandable Wells Tree Item (Exact nip.io submenu pattern) */}
+          <div className="space-y-1 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                if (isSidebarCollapsed) setIsSidebarCollapsed(false);
+                setWellsMenuOpen((o) => !o);
+              }}
+              title={isSidebarCollapsed ? "Quyular (10)" : undefined}
+              className={`group flex w-full items-center rounded-xl py-2.5 text-sm font-medium transition-all cursor-pointer text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 ${
+                isSidebarCollapsed ? "justify-center px-0 gap-0" : "justify-start px-3 gap-3"
+              }`}
+            >
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-zinc-300 group-hover:bg-[#155EEF]/15 group-hover:text-[#3B82F6] transition-colors">
+                <Sliders className="size-4" />
+              </span>
+              {!isSidebarCollapsed && (
+                <>
+                  <span className="flex-1 text-left truncate">Quyular ({selectedWell})</span>
+                  <ChevronDown
+                    className={`size-4 shrink-0 text-zinc-400 transition-transform duration-200 ${
+                      wellsMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </>
+              )}
+            </button>
+
+            {!isSidebarCollapsed && wellsMenuOpen && (
+              <div className="ml-4 pl-3 border-l border-zinc-800 grid grid-cols-2 gap-1 py-1">
+                {(bootstrap?.wells || []).map((w: any) => {
+                  const isSel = selectedWell === w.well_name;
+                  return (
+                    <button
+                      key={w.well_name}
+                      type="button"
+                      onClick={() => setSelectedWell(w.well_name)}
+                      className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                        isSel
+                          ? "bg-[#155EEF]/15 text-[#3B82F6] font-semibold"
+                          : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+                      }`}
+                    >
+                      <span
+                        className={`size-1.5 rounded-full shrink-0 ${
+                          isSel ? "bg-[#3B82F6]" : "bg-zinc-600"
+                        }`}
+                      />
+                      <span className="truncate font-mono">{w.well_name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
-          <select
-            aria-label="Workspace Profile"
-            value={user.email}
-            onChange={(e) => handleQuickRoleSwitch(e.target.value)}
-            className="w-full h-7 bg-zinc-900 border border-zinc-800 rounded-md px-2 text-[11px] text-zinc-300 focus:outline-none focus:border-cyan-500"
-          >
-            {demoAccounts.map((acc) => (
-              <option key={acc.email} value={acc.email}>
-                {acc.name} ({acc.role.split("_")[0]})
-              </option>
-            ))}
-          </select>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full h-7 text-[11px]"
+        </div>
+
+        {/* Sidebar Bottom Logout Button (Exact nip.io destructive style) */}
+        <div className={`border-t border-zinc-800 py-3 ${isSidebarCollapsed ? "px-2" : "px-3"}`}>
+          <button
+            type="button"
             onClick={() => {
               setToken(null);
               setUser(null);
             }}
+            title={isSidebarCollapsed ? "Çıxış" : undefined}
+            className={`group flex w-full items-center rounded-xl py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer ${
+              isSidebarCollapsed ? "justify-center px-0 gap-0" : "justify-start text-left px-3 gap-3"
+            }`}
           >
-            <LogOut className="w-3 h-3" />
-            Sign Out
-          </Button>
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-500/15 text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors">
+              <LogOut className="size-4" />
+            </span>
+            {!isSidebarCollapsed && <span className="flex-1 text-left truncate">Çıxış</span>}
+          </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar */}
-        <header className="h-12 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-semibold text-zinc-200">Caspian Cluster</span>
-            <span className="text-zinc-700">/</span>
-            <Badge variant="cyan" className="font-mono">{selectedWell}</Badge>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs font-mono">
-            <div className="hidden md:flex items-center gap-4">
+      {/* ================================================================= */}
+      {/* MAIN CONTENT WRAPPER (Dynamic margin matching nip.io layout)      */}
+      {/* ================================================================= */}
+      <div
+        className={`flex flex-col flex-1 min-w-0 transition-all duration-300 ${
+          isSidebarCollapsed ? "md:ml-[4.5rem]" : "md:ml-[15.875rem]"
+        }`}
+      >
+        {/* Top Sticky Header (Exact nip.io dt header) */}
+        <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-zinc-800 bg-zinc-950/95 px-6 backdrop-blur-xs transition-colors duration-200">
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-4 text-xs font-mono">
               <div>
-                <span className="text-zinc-500">Qo </span>
+                <span className="text-zinc-500">Qo: </span>
                 <span className="text-zinc-100 font-semibold">{fieldTotals.oil.toLocaleString()} bbl/d</span>
               </div>
               <div>
-                <span className="text-zinc-500">Qw </span>
+                <span className="text-zinc-500">Qw: </span>
                 <span className="text-zinc-300">{fieldTotals.water.toLocaleString()} bbl/d</span>
               </div>
               <div>
-                <span className="text-zinc-500">MAPE </span>
+                <span className="text-zinc-500">VFM MAPE: </span>
                 <span className="text-emerald-400 font-semibold">3.72%</span>
               </div>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
             <AppearanceSettings />
+
+            <button
+              type="button"
+              onClick={() => setShowLanding(true)}
+              className="inline-flex items-center h-9 gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 px-3 text-xs font-medium text-zinc-200 hover:bg-zinc-900 transition"
+            >
+              <Home className="size-3.5 text-[#3B82F6]" />
+              <span className="hidden md:inline">Landing</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("gaslift")}
+              className="inline-flex items-center h-9 gap-1.5 rounded-lg bg-[#155EEF] hover:bg-[#155EEF]/90 px-3.5 text-xs font-semibold text-white shadow-xs transition"
+            >
+              <Flame className="size-3.5" />
+              <span className="hidden md:inline">Optimiser (+$485k)</span>
+            </button>
+
+            {/* User Avatar Dropdown (Exact nip.io Header Profile Button) */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((v) => !v)}
+                className="flex items-center gap-2.5 rounded-xl p-1.5 pr-2.5 h-auto text-left hover:bg-zinc-900 transition cursor-pointer"
+              >
+                <div
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full border border-zinc-700 font-bold text-xs uppercase text-white"
+                  style={{ backgroundColor: "#155EEF" }}
+                >
+                  {user.name
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .slice(0, 2)}
+                </div>
+                <div className="hidden sm:flex flex-col max-w-[10rem]">
+                  <span className="truncate text-xs font-semibold text-zinc-100 leading-tight">
+                    {user.name}
+                  </span>
+                  <span className="truncate text-xs text-zinc-400 leading-tight mt-0.5">
+                    @{user.role.toLowerCase()}
+                  </span>
+                </div>
+                <ChevronDown className="size-4 text-zinc-400" />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-1.5 w-56 rounded-xl border border-zinc-800 bg-zinc-950 p-1.5 shadow-xl z-50">
+                  <div className="px-2.5 py-2 border-b border-zinc-800">
+                    <p className="text-sm font-semibold text-zinc-100">{user.name}</p>
+                    <p className="text-xs text-zinc-400 font-mono">{user.email}</p>
+                  </div>
+                  <div className="py-1">
+                    <div className="px-2.5 py-1 text-[10px] font-semibold uppercase text-zinc-500">
+                      Rol Dəyişdir
+                    </div>
+                    {demoAccounts.map((acc) => (
+                      <button
+                        key={acc.email}
+                        type="button"
+                        onClick={() => {
+                          handleQuickRoleSwitch(acc.email);
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100"
+                      >
+                        <span className="truncate">{acc.name}</span>
+                        <span className="text-[10px] font-mono text-[#3B82F6]">
+                          {acc.role.split("_")[0]}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="border-t border-zinc-800 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setToken(null);
+                        setUser(null);
+                      }}
+                      className="w-full flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10"
+                    >
+                      <LogOut className="size-3.5" />
+                      <span>Çıxış</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
+
+        {/* Sub-Header Breadcrumb Bar + Well Pills (Exact nip.io mt Breadcrumb) */}
+        <nav
+          aria-label="Breadcrumb"
+          className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 bg-zinc-950/60 px-6 py-2.5 text-xs text-zinc-400 backdrop-blur-xs"
+        >
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setShowLanding(true)}
+              className="inline-flex items-center gap-1.5 font-medium text-zinc-400 hover:text-zinc-100 transition-colors"
+            >
+              <Home className="h-3.5 w-3.5" />
+              <span>Ana səhifə</span>
+            </button>
+            <ChevronRight className="size-3.5 text-zinc-600 shrink-0" />
+            <span className="font-semibold text-zinc-100 bg-zinc-900 px-2 py-0.5 rounded-md">
+              {navItems.find((n) => n.id === activeTab)?.label}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1">
+            {(bootstrap?.wells || []).map((w: any) => (
+              <button
+                key={w.well_name}
+                type="button"
+                onClick={() => setSelectedWell(w.well_name)}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-mono transition ${
+                  selectedWell === w.well_name
+                    ? "bg-[#155EEF] text-white font-semibold shadow-2xs"
+                    : "bg-zinc-900 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
+                }`}
+              >
+                {w.well_name}
+              </button>
+            ))}
+          </div>
+        </nav>
 
         {/* Toast Banner */}
         {toast && (
