@@ -8,7 +8,7 @@ export const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border border-slate-800/80 bg-slate-900/65 text-slate-100 shadow-xl backdrop-blur-md",
+      "rounded-md border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-sm",
       className
     )}
     {...props}
@@ -70,28 +70,28 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
     const variants: Record<string, string> = {
       default:
-        "bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 shadow-lg shadow-emerald-500/20",
+        "bg-zinc-100 text-zinc-900 font-medium hover:bg-zinc-200 shadow-sm",
       cyber:
-        "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-bold hover:opacity-95 shadow-lg shadow-cyan-500/20",
+        "bg-zinc-100 text-zinc-900 font-medium hover:bg-zinc-200 shadow-sm",
       secondary:
-        "bg-slate-800 text-slate-100 hover:bg-slate-700 border border-slate-700/60",
+        "bg-zinc-900 text-zinc-100 hover:bg-zinc-800 border border-zinc-800",
       outline:
-        "border border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-200",
-      ghost: "hover:bg-slate-800/70 text-slate-300 hover:text-white",
+        "border border-zinc-800 bg-transparent hover:bg-zinc-900 text-zinc-200",
+      ghost: "hover:bg-zinc-900 text-zinc-400 hover:text-zinc-100",
       destructive:
-        "bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30",
+        "bg-red-950/60 text-red-300 border border-red-900 hover:bg-red-900/50",
     };
     const sizes: Record<string, string> = {
-      default: "h-10 px-4 py-2 text-sm",
-      sm: "h-8 rounded-lg px-3 text-xs",
-      lg: "h-11 rounded-xl px-6 text-base",
-      icon: "h-9 w-9",
+      default: "h-9 px-3.5 py-1.5 text-xs",
+      sm: "h-8 rounded-md px-2.5 text-xs",
+      lg: "h-10 rounded-md px-5 text-sm",
+      icon: "h-8 w-8",
     };
     return (
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-45",
+          "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-40",
           variants[variant],
           sizes[size],
           className
@@ -111,18 +111,18 @@ export function Badge({
   variant?: "default" | "emerald" | "amber" | "rose" | "cyan" | "purple" | "slate";
 }) {
   const styles: Record<string, string> = {
-    default: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-    emerald: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-    amber: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-    rose: "bg-rose-500/15 text-rose-300 border-rose-500/30",
-    cyan: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
-    purple: "bg-purple-500/15 text-purple-300 border-purple-500/30",
-    slate: "bg-slate-800 text-slate-300 border-slate-700",
+    default: "bg-zinc-900 text-zinc-200 border-zinc-800",
+    emerald: "bg-emerald-950/60 text-emerald-400 border-emerald-900/80",
+    amber: "bg-amber-950/60 text-amber-400 border-amber-900/80",
+    rose: "bg-red-950/60 text-red-400 border-red-900/80",
+    cyan: "bg-sky-950/60 text-sky-400 border-sky-900/80",
+    purple: "bg-zinc-900 text-zinc-300 border-zinc-700",
+    slate: "bg-zinc-900 text-zinc-400 border-zinc-800",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[11px] font-medium tracking-tight",
         styles[variant],
         className
       )}
@@ -138,10 +138,114 @@ export const Input = React.forwardRef<
   <input
     ref={ref}
     className={cn(
-      "flex h-9 w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:opacity-50",
+      "flex h-9 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-400 focus:outline-none disabled:opacity-50",
       className
     )}
     {...props}
   />
 ));
 Input.displayName = "Input";
+
+export const Label = React.forwardRef<
+  HTMLLabelElement,
+  React.LabelHTMLAttributes<HTMLLabelElement>
+>(({ className, ...props }, ref) => (
+  <label
+    ref={ref}
+    className={cn("text-xs font-medium leading-none text-zinc-300", className)}
+    {...props}
+  />
+));
+Label.displayName = "Label";
+
+export const Separator = ({
+  className,
+  orientation = "horizontal",
+}: {
+  className?: string;
+  orientation?: "horizontal" | "vertical";
+}) => (
+  <div
+    className={cn(
+      "shrink-0 bg-zinc-800",
+      orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
+      className
+    )}
+  />
+);
+
+export const Table = React.forwardRef<
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement>
+>(({ className, ...props }, ref) => (
+  <div className="relative w-full overflow-auto">
+    <table
+      ref={ref}
+      className={cn("w-full caption-bottom text-xs", className)}
+      {...props}
+    />
+  </div>
+));
+Table.displayName = "Table";
+
+export const TableHeader = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ className, ...props }, ref) => (
+  <thead ref={ref} className={cn("[&_tr]:border-b border-zinc-800 bg-zinc-900/40", className)} {...props} />
+));
+TableHeader.displayName = "TableHeader";
+
+export const TableBody = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ className, ...props }, ref) => (
+  <tbody
+    ref={ref}
+    className={cn("[&_tr:last-child]:border-0 divide-y divide-zinc-800/70", className)}
+    {...props}
+  />
+));
+TableBody.displayName = "TableBody";
+
+export const TableRow = React.forwardRef<
+  HTMLTableRowElement,
+  React.HTMLAttributes<HTMLTableRowElement>
+>(({ className, ...props }, ref) => (
+  <tr
+    ref={ref}
+    className={cn(
+      "border-b border-zinc-800/70 transition-colors hover:bg-zinc-900/60 data-[state=selected]:bg-zinc-900",
+      className
+    )}
+    {...props}
+  />
+));
+TableRow.displayName = "TableRow";
+
+export const TableHead = React.forwardRef<
+  HTMLTableCellElement,
+  React.ThHTMLAttributes<HTMLTableCellElement>
+>(({ className, ...props }, ref) => (
+  <th
+    ref={ref}
+    className={cn(
+      "h-9 px-3 text-left align-middle font-medium text-zinc-400 [&:has([role=checkbox])]:pr-0",
+      className
+    )}
+    {...props}
+  />
+));
+TableHead.displayName = "TableHead";
+
+export const TableCell = React.forwardRef<
+  HTMLTableCellElement,
+  React.TdHTMLAttributes<HTMLTableCellElement>
+>(({ className, ...props }, ref) => (
+  <td
+    ref={ref}
+    className={cn("p-2.5 px-3 align-middle text-zinc-200 tabular-nums", className)}
+    {...props}
+  />
+));
+TableCell.displayName = "TableCell";

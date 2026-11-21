@@ -28,9 +28,9 @@
 }
 
 body {
-  background-color: #050914;
-  color: #f8fafc;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: #09090b;
+  color: #fafafa;
+  font-feature-settings: "tnum" 1;
   overflow-x: hidden;
 }
 

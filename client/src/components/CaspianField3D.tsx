@@ -49,8 +49,8 @@ export default function CaspianField3D({
     const height = container.clientHeight || 460;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x040814);
-    scene.fog = new THREE.FogExp2(0x040814, 0.012);
+    scene.background = new THREE.Color(0x09090b);
+    scene.fog = new THREE.FogExp2(0x09090b, 0.011);
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 500);
     camera.position.set(0, 14, 42);
@@ -356,64 +356,64 @@ export default function CaspianField3D({
   const activePred = latestPredictions.find((p) => p.well_name === (hoveredWell || selectedWell));
 
   return (
-    <div className="relative w-full h-[460px] rounded-2xl overflow-hidden border border-slate-800 bg-[#040814] shadow-2xl">
+    <div className="relative w-full h-[460px] rounded-md overflow-hidden border border-zinc-800 bg-[#09090b]">
       {/* Three.js WebGL Mount */}
       <div ref={mountRef} className="w-full h-full" />
 
       {/* Top Left Overlay HUD */}
-      <div className="absolute top-4 left-4 pointer-events-none flex flex-col gap-2">
-        <div className="flex items-center gap-2 bg-slate-950/85 border border-slate-800/90 px-3.5 py-2 rounded-xl backdrop-blur-md">
-          <Compass className="w-4 h-4 text-emerald-400 animate-pulse" />
+      <div className="absolute top-3 left-3 pointer-events-none flex flex-col gap-1.5">
+        <div className="flex items-center gap-2 bg-zinc-950/90 border border-zinc-800 px-3 py-1.5 rounded-md">
+          <Compass className="w-3.5 h-3.5 text-zinc-300" />
           <div>
-            <div className="text-xs font-bold tracking-wider uppercase text-slate-200">
-              Caspian Subsurface 3D Digital Twin
+            <div className="text-[11px] font-semibold tracking-tight text-zinc-100">
+              Subsurface Wellbore Topology (3D WebGL)
             </div>
-            <div className="text-[11px] text-slate-400">
-              10 Gas-Lifted Wells · TVD 7,850–10,110 ft · Interactive WebGL
+            <div className="text-[10px] text-zinc-400 font-mono">
+              10 Wells · TVD 7,850–10,110 ft · Drag to rotate, click well to inspect
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          <Badge variant="cyan">🔵 Selected: {selectedWell}</Badge>
-          <Badge variant="emerald">🟢 Good IARF Wells</Badge>
-          <Badge variant="amber">🟠 GL-06 Skin +1.74 (Stimulate)</Badge>
-          <Badge variant="rose">🔴 GL-04 Excess Gas Donor</Badge>
+        <div className="flex flex-wrap gap-1">
+          <Badge variant="default">Active: {selectedWell}</Badge>
+          <Badge variant="emerald">IARF Good</Badge>
+          <Badge variant="amber">GL-06 Skin +1.74</Badge>
+          <Badge variant="rose">GL-04 Donor</Badge>
         </div>
       </div>
 
       {/* Top Right Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+      <div className="absolute top-3 right-3 flex items-center gap-1.5">
         <button
           onClick={() => setAutoRotate(!autoRotate)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border backdrop-blur-md transition ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium border transition ${
             autoRotate
-              ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
-              : "bg-slate-900/80 border-slate-700 text-slate-300"
+              ? "bg-zinc-100 border-zinc-100 text-zinc-900"
+              : "bg-zinc-950/90 border-zinc-800 text-zinc-300 hover:bg-zinc-900"
           }`}
         >
-          <RotateCw className="w-3.5 h-3.5" />
+          <RotateCw className="w-3 h-3" />
           {autoRotate ? "Orbit: ON" : "Orbit: OFF"}
         </button>
         <button
           onClick={() => setShowStrata(!showStrata)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border bg-slate-900/80 border-slate-700 text-slate-300 hover:text-white backdrop-blur-md transition"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium border bg-zinc-950/90 border-zinc-800 text-zinc-300 hover:bg-zinc-900 transition"
         >
-          <Layers className="w-3.5 h-3.5 text-cyan-400" />
+          <Layers className="w-3 h-3 text-zinc-400" />
           {showStrata ? "Horizon: ON" : "Horizon: OFF"}
         </button>
       </div>
 
-      {/* Bottom Well Selector Pill Bar & Live Telemetry Telemetry HUD */}
-      <div className="absolute bottom-3 inset-x-4 flex flex-wrap items-center justify-between gap-3 bg-slate-950/85 border border-slate-800/90 px-4 py-2.5 rounded-xl backdrop-blur-md">
-        <div className="flex flex-wrap items-center gap-1.5">
+      {/* Bottom Well Selector Bar & Telemetry */}
+      <div className="absolute bottom-3 inset-x-3 flex flex-wrap items-center justify-between gap-2 bg-zinc-950/95 border border-zinc-800 px-3 py-2 rounded-md">
+        <div className="flex flex-wrap items-center gap-1">
           {Object.keys(WELL_POSITIONS).map((w) => (
             <button
               key={w}
               onClick={() => onSelectWell(w)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+              className={`px-2 py-0.5 rounded text-[11px] font-mono font-medium transition ${
                 selectedWell === w
-                  ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30"
-                  : "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800"
+                  ? "bg-zinc-100 text-zinc-950 font-semibold"
+                  : "bg-zinc-900 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
               }`}
             >
               {w}
@@ -422,26 +422,26 @@ export default function CaspianField3D({
         </div>
 
         {activeWellObj && (
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-4 text-[11px] font-mono">
             <div>
-              <span className="text-slate-400">Well: </span>
-              <span className="font-bold text-cyan-300">{activeWellObj.well_name}</span>
+              <span className="text-zinc-500">WELL </span>
+              <span className="font-semibold text-zinc-100">{activeWellObj.well_name}</span>
             </div>
             <div>
-              <span className="text-slate-400">Gauge / Datum TVD: </span>
-              <span className="font-semibold text-slate-200">
+              <span className="text-zinc-500">TVD </span>
+              <span className="text-zinc-200">
                 {activeWellObj.completion?.gauge_tvd_ft} / {activeWellObj.pvt?.datum_tvd_ft} ft
               </span>
             </div>
             <div>
-              <span className="text-slate-400">GL Valve: </span>
-              <span className="font-semibold text-slate-200">
+              <span className="text-zinc-500">GL VALVE </span>
+              <span className="text-zinc-200">
                 {activeWellObj.completion?.gl_valve_tvd_ft} ft
               </span>
             </div>
             <div>
-              <span className="text-slate-400">Oil Rate: </span>
-              <span className="font-bold text-emerald-400">
+              <span className="text-zinc-500">Qo </span>
+              <span className="font-semibold text-emerald-400">
                 {activePred?.oil_rate_stbd?.toFixed(0)} STB/d
               </span>
             </div>
