@@ -13,10 +13,76 @@ interface AzersilahLandingProps {
 
 const ROTATING_WORDS = ["METER", "OPTIMIZE", "PREDICT", "CONTROL"];
 
+function CountUpStat({
+  target,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
+  duration = 2400,
+}: {
+  target: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  duration?: number;
+}) {
+  const [current, setCurrent] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setStarted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!started) return;
+    let startTime: number | null = null;
+    let rafId: number;
+
+    const update = (now: number) => {
+      if (!startTime) startTime = now;
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeOutCubic: starts quickly and smoothly settles
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCurrent(eased * target);
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(update);
+      } else {
+        setCurrent(target);
+      }
+    };
+
+    rafId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(rafId);
+  }, [started, target, duration]);
+
+  return (
+    <div ref={containerRef} className="text-6xl sm:text-7xl xl:text-8xl font-normal tracking-[-0.05em] leading-none tabular-nums">
+      {prefix}
+      {current.toFixed(decimals)}
+      {suffix}
+    </div>
+  );
+}
+
 export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: AzersilahLandingProps) {
   const [wordIndex, setWordIndex] = useState(0);
   const t = TRANSLATIONS[lang];
-  const heroCanvasRef = useRef<HTMLCanvasElement>(null);
   const landingRootRef = useRef<HTMLDivElement>(null);
 
   // Vertical word carousel (like Azersilah heroSwiper: DEFEND / WIN / CONTROL)
@@ -25,151 +91,6 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
       setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
     }, 2200);
     return () => clearInterval(timer);
-  }, []);
-
-  // Animated WebGL-style Offshore Caspian & Subsurface Seismic Motion Backdrop Canvas (60 FPS GIF-like background)
-  useEffect(() => {
-    const canvas = heroCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animId: number;
-    let t = 0;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    // Subsurface well particles & seismic nodes
-    const nodes = Array.from({ length: 55 }, (_, i) => ({
-      x: (i / 55) * 1.2 - 0.1,
-      y: 0.25 + Math.random() * 0.65,
-      r: 1.5 + Math.random() * 2.5,
-      speed: 0.0008 + Math.random() * 0.0018,
-      well: i % 10,
-    }));
-
-    const draw = () => {
-      animId = requestAnimationFrame(draw);
-      t += 0.016;
-      const w = canvas.width;
-      const h = canvas.height;
-
-      // Deep Caspian industrial gradient backdrop
-      const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, "#021019");
-      grad.addColorStop(0.45, "#042335");
-      grad.addColorStop(1, "#010b12");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      // Subtle architectural radar grid
-      ctx.strokeStyle = "rgba(56, 189, 248, 0.06)";
-      ctx.lineWidth = 1;
-      const step = 64;
-      for (let gx = 0; gx < w; gx += step) {
-        ctx.beginPath();
-        ctx.moveTo(gx, 0);
-        ctx.lineTo(gx, h);
-        ctx.stroke();
-      }
-      for (let gy = 0; gy < h; gy += step) {
-        ctx.beginPath();
-        ctx.moveTo(0, gy);
-        ctx.lineTo(w, gy);
-        ctx.stroke();
-      }
-
-      // 5 Undulating Seismic Anticline Horizons (Animated Wave Contours)
-      const horizons = [
-        { yBase: h * 0.36, amp: 18, color: "rgba(14, 165, 233, 0.28)", fill: "rgba(14, 165, 233, 0.04)" },
-        { yBase: h * 0.50, amp: 28, color: "rgba(20, 184, 166, 0.32)", fill: "rgba(20, 184, 166, 0.05)" },
-        { yBase: h * 0.64, amp: 36, color: "rgba(16, 185, 129, 0.35)", fill: "rgba(16, 185, 129, 0.06)" },
-        { yBase: h * 0.78, amp: 24, color: "rgba(245, 158, 11, 0.25)", fill: "rgba(245, 158, 11, 0.04)" },
-      ];
-
-      horizons.forEach((hz, idx) => {
-        ctx.beginPath();
-        for (let x = 0; x <= w; x += 12) {
-          const nx = x / w;
-          const dome = Math.sin(nx * Math.PI) * hz.amp * 1.4;
-          const wave =
-            Math.sin(nx * 8 + t * (1.1 + idx * 0.2)) * (hz.amp * 0.45) +
-            Math.cos(nx * 14 - t * 0.8) * 6;
-          const py = hz.yBase - dome + wave;
-          if (x === 0) ctx.moveTo(x, py);
-          else ctx.lineTo(x, py);
-        }
-        ctx.strokeStyle = hz.color;
-        ctx.lineWidth = 1.6;
-        ctx.stroke();
-
-        ctx.lineTo(w, h);
-        ctx.lineTo(0, h);
-        ctx.closePath();
-        ctx.fillStyle = hz.fill;
-        ctx.fill();
-      });
-
-      // 10 Deviated Gas-Lift Wellbore Trajectories radiating from Offshore Platform Center
-      const rigX = w * 0.5;
-      const rigY = h * 0.24;
-      for (let i = 0; i < 10; i++) {
-        const spread = (i - 4.5) / 5;
-        const targetX = rigX + spread * (w * 0.42);
-        const targetY = h * (0.72 + (i % 3) * 0.07);
-        const ctrlX = rigX + spread * (w * 0.16);
-        const ctrlY = h * 0.48;
-
-        ctx.beginPath();
-        ctx.moveTo(rigX + spread * 24, rigY);
-        ctx.quadraticCurveTo(ctrlX, ctrlY, targetX, targetY);
-        ctx.strokeStyle =
-          i === 5
-            ? "rgba(245, 158, 11, 0.55)" // GL-06 Stimulation Target
-            : i === 0
-            ? "rgba(16, 185, 129, 0.55)" // GL-01 High Marginal Yield
-            : "rgba(56, 189, 248, 0.28)";
-        ctx.lineWidth = i === 5 || i === 0 ? 2.2 : 1.2;
-        ctx.stroke();
-
-        // Pulsing Darcy Radial Pressure Wave at toe of each well
-        const pulse = ((t * 0.7 + i * 0.23) % 1);
-        ctx.beginPath();
-        ctx.arc(targetX, targetY, 6 + pulse * 36, 0, Math.PI * 2);
-        ctx.strokeStyle =
-          i === 5
-            ? `rgba(245, 158, 11, ${(1 - pulse) * 0.6})`
-            : `rgba(16, 185, 129, ${(1 - pulse) * 0.5})`;
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-      }
-
-      // Multiphase Flowing Particles rising along wellbores
-      nodes.forEach((n) => {
-        n.y -= n.speed;
-        if (n.y < 0.24) n.y = 0.88;
-        const spread = (n.well - 4.5) / 5;
-        const prog = (n.y - 0.24) / 0.64;
-        const px = rigX + spread * (w * 0.42) * Math.pow(prog, 1.25);
-        const py = n.y * h;
-
-        ctx.beginPath();
-        ctx.arc(px, py, n.r, 0, Math.PI * 2);
-        ctx.fillStyle = n.well === 5 ? "#f59e0b" : "#2dd4bf";
-        ctx.fill();
-      });
-    };
-
-    draw();
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-    };
   }, []);
 
   // GSAP Entrance Animations
@@ -188,30 +109,20 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
     {
       id: "vfm" as const,
       num: "01",
-      title: lang === "AZ" ? "VİRTUAL AXIN ÖLÇMƏ (VFM)" : "VIRTUAL FLOW METERING (VFM)",
-      subtitle: "vfm_daily_predictions.xlsx",
-      metric: "3.72% FORWARD OIL MAPE",
-      tags: [
-        "38% Daha Aşağı Neft Xətası",
-        "BoundedRidge Fiziki Model",
-        "+0.7% Separator Bias",
-        "Gündəlik Neft · Su · Qaz",
-      ],
+      title: lang === "AZ" ? "VİRTUAL AXIN ÖLÇMƏ" : "VIRTUAL FLOW METERING",
+      subtitle: "VFM MODEL",
+      metric: "3.72% FORWARD MAPE",
+      tags: ["3.72% MAPE", "BoundedRidge", "Bias +0.7%", "Daily Rates"],
       accent: "#10b981",
       svgType: "vfm",
     },
     {
       id: "pta" as const,
       num: "02",
-      title: lang === "AZ" ? "TƏZYİQ BƏRPASI ANALİZİ (PTA)" : "PRESSURE TRANSIENT ANALYSIS (PTA)",
-      subtitle: "pta_reservoir_properties.xlsx",
-      metric: "GL-06 SKIN +1.74 · k = 292 md",
-      tags: [
-        "Bourdet Log-Log Törəməsi",
-        "Horner Yarım-Loq Reqressiya",
-        "4 Good · 2 Indicative Quyu",
-        "#1 Stimulyasiya Namizədi: GL-06",
-      ],
+      title: lang === "AZ" ? "TƏZYİQ BƏRPASI ANALİZİ" : "PRESSURE TRANSIENT ANALYSIS",
+      subtitle: "HORNER & BOURDET",
+      metric: "GL-06 SKIN +1.74",
+      tags: ["Bourdet Log-Log", "Horner R² > 0.999", "k = 292 md", "Stimulation Target"],
       accent: "#f59e0b",
       svgType: "pta",
     },
@@ -219,29 +130,19 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
       id: "gaslift" as const,
       num: "03",
       title: lang === "AZ" ? "QAZ-LİFT OPTİMALLAŞDIRICISI" : "LIFT-GAS ALLOCATION OPTIMISER",
-      subtitle: "GL-04 → GL-01 (100 Mscf/d)",
-      metric: "+19 BBL/D · +$485,000 / İL",
-      tags: [
-        "$0 CAPEX İqtisadi Qazanc",
-        "GL-01: +26 bbl/d per 100 Mscf",
-        "GL-04: +7.5 bbl/d (Donor)",
-        "GL-03 (+82) & GL-05 (+59) Potensial",
-      ],
+      subtitle: "ZERO-CAPEX VALUE",
+      metric: "+19 BBL/D · +$485K/YR",
+      tags: ["$0 CAPEX", "+19 bbl/d Uplift", "+$485k/yr Revenue", "GL-04 → GL-01"],
       accent: "#06b6d4",
       svgType: "gaslift",
     },
     {
       id: "data" as const,
       num: "04",
-      title: lang === "AZ" ? "3.93M SENSOR TELEMETRİYASI & 3D TWIN" : "3.93M SENSOR QC & 3D DIGITAL TWIN",
-      subtitle: "10 Quyu · 273 Gün · 1-Dəq Tezlik",
-      metric: "14 İYUN TƏBİİ EKSPERİMENTİ",
-      tags: [
-        "3.93M Dəqiqəlik Sensor Sətri",
-        "Spikes · Frozen · Shut-In Aşkarlama",
-        "3D Xəzər Platforması & Quyular",
-        "4 Offline Excel & HTML Hesabat",
-      ],
+      title: lang === "AZ" ? "3D TWIN & TELEMETRİYA" : "3D DIGITAL TWIN & SENSORS",
+      subtitle: "CASPIAN FIELD",
+      metric: "10 WELLS · 3.93M ROWS",
+      tags: ["3.93M Rows", "10 Wells", "3D WebGL Twin", "Cleaned Sensors"],
       accent: "#3b82f6",
       svgType: "twin",
     },
@@ -253,20 +154,14 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
       {/* STICKY 100dvh HERO — EXACT AZERSILAH.COM 2×2 GRID & CENTER '+' RETICLE */}
       {/* ===================================================================== */}
       <header className="sticky inset-0 z-10 w-full isolate h-dvh overflow-hidden bg-[#021824] text-white">
-        {/* AI-Generated Caspian Offshore Rig Backdrop + Animated Subsurface Telemetry Canvas */}
+        {/* Ultra-Realistic Photorealistic Animated Caspian Offshore Rig Backdrop (Pure GIF, Zero Synthetic Wave Lines) */}
         <img
-          src="/caspian-rig.png"
+          src="/caspian-rig.gif"
           alt="Caspian Offshore Rig"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-          className="absolute inset-0 w-full h-full object-cover opacity-35 mix-blend-luminosity z-0"
+          className="absolute inset-0 w-full h-full object-cover opacity-90 z-0 pointer-events-none"
         />
-        <canvas
-          ref={heroCanvasRef}
-          className="absolute inset-0 w-full h-full object-cover opacity-85 z-0"
-        />
-        <div className="absolute inset-0 bg-black/25 z-0" />
+        {/* Subtle cinematic gradient vignette */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#021824]/90 via-[#021824]/20 to-[#021824]/40 z-0 pointer-events-none" />
 
         {/* Exact Azersilah Top Bar: Brand Logo Left | Horizontal Side-by-Side Links Middle | AZ/EN/RU & Enter Dashboard Right */}
         <div className="absolute top-0 inset-x-0 z-30 flex justify-between items-center px-6 md:px-10 pt-5 md:pt-7">
@@ -297,6 +192,7 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
               { label: t.land_edge, href: "#our-edge" },
               { label: t.land_validation, href: "#supply" },
               { label: "WELLPERF AI", action: () => onLaunchDashboard("ai") },
+              { label: "TƏQDİMAT (DECK)", href: "/presentation" },
             ].map((item, idx) => (
               <li key={idx} className="group overflow-hidden">
                 {item.action ? (
@@ -465,7 +361,7 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
           className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 px-6 md:px-10 pt-20 md:pt-28 pb-12 md:pb-16"
         >
           <div className="col-span-1">
-            <span className="font-mono font-medium text-sm md:text-base text-[#05293C]/60 tracking-[-0.03em] flex items-center gap-2 uppercase">
+            <span className="font-mono font-medium text-xs md:text-sm text-[#05293C]/60 tracking-wider flex items-center gap-2 uppercase">
               <span>[</span> {lang === "AZ" ? "PROBLEM VƏ HƏLL" : "THE PROBLEM & SOLUTION"} <span>]</span>
             </span>
           </div>
@@ -473,14 +369,25 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
           <div className="col-span-1 md:col-span-2 md:w-5/6">
             <h2 className="font-medium text-[#05293C] text-3xl sm:text-5xl xl:text-6xl tracking-[-0.04em] uppercase leading-[100%]">
               {lang === "AZ"
-                ? "TEST GÜNLƏRİ ARASINDA KOR İDARƏETMƏYƏ SON: BİR TƏTBİQ, DÖRD ADDIM"
-                : "BRIDGING THE BLIND GAP BETWEEN MONTHLY WELL TESTS"}
+                ? "TEST GÜNLƏRİ ARASINDA KOR İDARƏETMƏYƏ SON"
+                : "BRIDGING THE 30-DAY BLIND WELL TESTING GAP"}
             </h2>
-            <p className="text-[#4C5B63] text-base md:text-lg leading-[145%] tracking-[-0.01em] pt-5">
+            <p className="text-[#4C5B63] text-base md:text-lg leading-relaxed tracking-[-0.01em] pt-4 max-w-2xl">
               {lang === "AZ"
-                ? "Yataqdakı 10 qaz-lift quyusu gündəlik 14,250 bbl neft, 7,170 bbl su və 3,660 Mscf qaz hasil edir, lakin real деbit yalnız ayda bir dəfə test separatorunda ölçülür. WellPerf 3.93 milyon sətirlik 1-dəqiqəlik təzyiq, temperatur, ştuser və lift-qaz sensorlarını təmizləyir, fiziki məhdudiyyətli VFM ilə gündəlik hasilatı 3.72% dəqiqliklə hesablayır, PTA build-up testlərini analiz edir və əlavə qaz-liftin hansı quyuda ən çox neft verəcəyini sıralayır."
-                : "The field operates 10 gas-lifted oil wells producing 14,250 bbl/d oil with 9,100 Mscf/d of lift gas, yet rates are only measured once a month on the test separator. WellPerf turns 3.9 million rows of 1-minute pressure, temperature, choke and lift-gas telemetry into calibrated daily phase rates (VFM), automated build-up permeability & skin diagnostics (PTA), and zero-CAPEX lift-gas reallocation."}
+                ? "10 qaz-lift quyusu · 14,250 bbl/d hasilat. Aylıq 1 test separatoru məhdudiyyətini 3.93M sensor telemetriyası, fiziki VFM və 3D rəqəmsal əkizlə real-vaxt idarəetməyə çeviririk."
+                : "10 gas-lift wells · 14,250 bbl/d production. Eliminating monthly separator limitations with 3.93M sensor rows, physics-constrained VFM, and a 3D subsurface digital twin."}
             </p>
+            <div className="flex flex-wrap gap-2 pt-5">
+              <span className="px-2.5 py-1 rounded bg-[#05293C]/5 border border-[#05293C]/15 text-xs font-mono font-medium text-[#05293C]">
+                10 WELLS · CASPIAN FIELD
+              </span>
+              <span className="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono font-medium text-emerald-700">
+                3.72% FORWARD OIL MAPE
+              </span>
+              <span className="px-2.5 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-xs font-mono font-medium text-cyan-800">
+                +$485K/YR LIFT-GAS ROI
+              </span>
+            </div>
           </div>
         </section>
 
@@ -491,40 +398,53 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
         >
           {[
             {
-              value: "3.72%",
+              target: 3.72,
+              decimals: 2,
+              suffix: "%",
+              prefix: "",
               label:
                 lang === "AZ"
-                  ? "FORWARD VFM NEFT XƏTASI (STANDART 6.00% METODUNDAN 38% DAHA DƏQİQ)"
-                  : "FORWARD VFM OIL ERROR (38% LOWER THAN 6.00% INDUSTRY CARRY-FORWARD)",
+                  ? "FORWARD NEFT XƏTASI · 38% DAHA DƏQİQ"
+                  : "FORWARD OIL ERROR · 38% ACCURACY GAIN",
             },
             {
-              value: "$485K",
+              target: 485,
+              decimals: 0,
+              suffix: "K",
+              prefix: "+$",
               label:
                 lang === "AZ"
-                  ? "GL-04 → GL-01 (100 MSCF/D) QAZ BÖLGÜSÜNDƏN İLLİK ƏLAVƏ GƏLİR (+19 BBL/D)"
-                  : "ANNUAL ZERO-CAPEX VALUE MOVING 100 MSCF/D FROM GL-04 TO GL-01 (+19 BBL/D)",
+                  ? "İLLİK ƏLAVƏ QAZANC · $0 CAPEX QAZ-LİFT"
+                  : "ANNUAL VALUE · $0 CAPEX GAS-LIFT",
             },
             {
-              value: "+1.74",
+              target: 1.74,
+              decimals: 2,
+              suffix: "",
+              prefix: "+",
               label:
                 lang === "AZ"
-                  ? "GL-06 QUYUSUNDA TƏSDİQLƏNMİŞ SKİN FAKTORU (k = 292 MD · #1 STİMULYASİYA NAMİZƏDİ)"
-                  : "VALIDATED SKIN ON GL-06 (k = 292 MD · RANKED #1 STIMULATION CANDIDATE)",
+                  ? "GL-06 SKİN FAKTORU · #1 STİMULYASİYA HƏDƏFİ"
+                  : "GL-06 SKIN · #1 WORKOVER TARGET",
             },
           ].map((st, idx) => (
-            <div key={idx} className="flex flex-col justify-between gap-10 text-[#05293C]">
+            <div key={idx} className="flex flex-col justify-between gap-8 text-[#05293C] p-2">
               {/* Top U-Bracket */}
-              <div className="w-full h-6 border-t border-x border-[#D5DFE5]" />
-              <div className="px-4">
-                <div className="text-6xl sm:text-7xl xl:text-8xl font-normal tracking-[-0.05em] leading-none">
-                  {st.value}
-                </div>
-                <p className="font-medium text-xs sm:text-sm md:text-base uppercase tracking-[-0.03em] leading-[125%] pt-4 text-[#05293C]/85">
+              <div className="w-full h-5 border-t border-x border-[#D5DFE5]" />
+              <div className="px-3">
+                <CountUpStat
+                  target={st.target}
+                  decimals={st.decimals}
+                  suffix={st.suffix}
+                  prefix={st.prefix}
+                  duration={2400}
+                />
+                <p className="font-mono text-xs sm:text-sm uppercase tracking-wider pt-3 text-[#05293C]/75 font-semibold">
                   {st.label}
                 </p>
               </div>
               {/* Bottom U-Bracket */}
-              <div className="w-full h-6 border-b border-x border-[#D5DFE5]" />
+              <div className="w-full h-5 border-b border-x border-[#D5DFE5]" />
             </div>
           ))}
         </section>
@@ -558,25 +478,22 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
           </div>
         </section>
 
-        {/* 2×2 Azersilah Product Portfolio Grid */}
+        {/* 2×2 Product Portfolio Grid — Awwwards Luxury Dark Glassmorphism */}
         <section className="px-6 md:px-10 pb-20 md:pb-28">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {MODULE_CARDS.map((card) => (
               <div
                 key={card.id}
                 onClick={() => onLaunchDashboard(card.id)}
-                className="group relative overflow-hidden bg-[#F0F3F5] hover:bg-[#E2E8EC] p-6 md:p-8 min-h-[380px] md:min-h-[430px] flex flex-col justify-between transition-colors duration-500 cursor-pointer border border-[#E1E7EB]"
+                className="group relative overflow-hidden bg-[#031826] hover:bg-[#052233] p-6 md:p-8 min-h-[360px] md:min-h-[400px] flex flex-col justify-between transition-all duration-500 cursor-pointer border border-white/10 hover:border-cyan-400/40 rounded-xl shadow-2xl text-white"
               >
-                {/* Top Hover-Revealing Tags */}
+                {/* Top Tags & Metric Pill */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-mono text-xs font-bold text-[#05293C]/60">
-                      STEP {card.num} / {card.subtitle}
+                    <span className="font-mono text-xs font-bold text-white/50 tracking-wider">
+                      STEP {card.num} · {card.subtitle}
                     </span>
-                    <span
-                      className="font-mono text-xs font-bold px-2.5 py-1"
-                      style={{ backgroundColor: "#05293C", color: "#ffffff" }}
-                    >
+                    <span className="font-mono text-xs font-bold px-2.5 py-1 rounded bg-cyan-400/15 text-cyan-300 border border-cyan-400/30">
                       {card.metric}
                     </span>
                   </div>
@@ -584,7 +501,7 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
                     {card.tags.map((t, i) => (
                       <span
                         key={i}
-                        className="border border-[#B8C4CC] bg-white/70 group-hover:border-[#05293C] px-3 py-1 text-xs font-medium text-[#05293C] transition-colors"
+                        className="rounded border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] font-mono text-white/80 group-hover:border-cyan-400/40 transition-colors"
                       >
                         {t}
                       </span>
@@ -706,10 +623,10 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
 
                 {/* Bottom Title & Arrow */}
                 <div className="flex items-end justify-between">
-                  <h3 className="font-medium text-2xl md:text-3xl text-[#05293C] uppercase tracking-[-0.03em] leading-none">
+                  <h3 className="font-medium text-2xl md:text-3xl text-white uppercase tracking-tight leading-none group-hover:text-cyan-300 transition-colors">
                     {card.title}
                   </h3>
-                  <div className="h-10 w-10 rounded-full border border-[#05293C]/20 group-hover:bg-[#05293C] group-hover:text-white flex items-center justify-center transition-all">
+                  <div className="h-10 w-10 rounded-full border border-white/20 group-hover:bg-cyan-400 group-hover:text-zinc-950 flex items-center justify-center transition-all">
                     <ArrowUpRight className="w-5 h-5" />
                   </div>
                 </div>
@@ -718,66 +635,66 @@ export function AzersilahLanding({ lang, onChangeLang, onLaunchDashboard }: Azer
           </div>
         </section>
 
-        {/* 4. [ OUR EDGE & VALIDATION ] — Exact Azersilah Deep Navy #021824 3-Col Section */}
+        {/* 4. [ OUR EDGE & VALIDATION ] */}
         <section
           id="our-edge"
-          className="bg-[#021824] text-white grid grid-cols-1 md:grid-cols-3 gap-6 px-6 md:px-10 pt-20 md:pt-28 pb-12"
+          className="bg-[#021824] text-white grid grid-cols-1 md:grid-cols-3 gap-6 px-6 md:px-10 pt-20 md:pt-28 pb-10"
         >
           <div className="col-span-1">
-            <span className="font-mono font-medium text-sm md:text-base text-white/50 tracking-[-0.03em] flex items-center gap-2 uppercase">
-              <span>[</span> {lang === "AZ" ? "NECƏ TƏSDİQLƏDİK?" : "HOW WE VALIDATED IT"} <span>]</span>
+            <span className="font-mono font-medium text-xs md:text-sm text-cyan-400 tracking-wider flex items-center gap-2 uppercase">
+              <span>[</span> {lang === "AZ" ? "MÜHƏNDİSLİK SÜBUTU" : "ENGINEERING PROOF"} <span>]</span>
             </span>
           </div>
           <div className="col-span-1 md:col-span-2">
             <h2 className="font-medium text-white text-3xl sm:text-5xl xl:text-6xl tracking-[-0.04em] uppercase leading-[100%]">
               {lang === "AZ"
-                ? "DATA TƏLƏSİNİN HƏLLİ VƏ TƏBİİ EKSPERİMENT SÜBUTU"
-                : "SOLVING THE SEPARATOR TRAP & PROVEN ON REAL FIELD EVENTS"}
+                ? "DATA TƏLƏSİNİN HƏLLİ VƏ SAHƏ SÜBUTU"
+                : "SOLVING THE SEPARATOR TRAP WITH FIELD PROOF"}
             </h2>
           </div>
         </section>
 
         <section id="supply" className="bg-[#021824] text-white pb-20 md:pb-28 px-6 md:px-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 border border-white/20">
+          <div className="grid grid-cols-1 md:grid-cols-3 border border-white/15 rounded-xl overflow-hidden">
             {[
               {
                 num: "01",
-                title: lang === "AZ" ? "TEST SEPARATORU TƏLƏSİ (+0.7% BİAS)" : "TEST SEPARATOR ROUTING TRAP REMOVED",
+                title: lang === "AZ" ? "SEPARATOR TƏLƏSİ (+0.7% BİAS)" : "SEPARATOR ROUTING TRAP ELIMINATED",
                 desc:
                   lang === "AZ"
-                    ? "Quyu test separatoruna yönəldildikdə quyuağzı təzyiq düşür. Adi model axını deyil, separator marşrutunu öyrənir (−9% bias). Biz quyudibi və həlqəvi fəza sensorlarına keçərək test-günü sürüşməsini +0.7%-ə endirdik."
-                    : "Surface pressures drop when routed to the test separator. A naive model learns routing, not flow (−9% bias). Switching to downhole & annulus inputs reduced test-day bias to +0.7%.",
+                    ? "Test xəttindəki WHP düşüşü izolyasiya edildi. Test-günü meylliliyi (bias) −9.0%-dən +0.7%-ə endirildi."
+                    : "WHP separator drop isolated. Test-day routing bias reduced from −9.0% to +0.7%.",
               },
               {
                 num: "02",
                 title: lang === "AZ" ? "14 İYUN TƏBİİ EKSPERİMENTİ" : "JUNE 14 NATURAL EXPERIMENT",
                 desc:
                   lang === "AZ"
-                    ? "14 İyun (10:20–15:02) tarixində bütün 10 quyuda lift-qaz verilişi eyni anda ~50% azaldı və hər bir quyuda quyudibi təzyiq dərhal qalxdı. Bu, qaz-lift modelimizi fərziyyəsiz, real sahə datası ilə sübut edir."
-                    : "On 14 Jun (10:20–15:02), lift gas fell by half across all 10 wells simultaneously. Every well's bottom-hole pressure rose, proving the lift-gas physics directly from real data.",
+                    ? "Sahə üzrə 50% qaz kəsintisi hər quyunun real Məhsuldarlıq İndeksini (J) və qaz cavabını sübut etdi."
+                    : "50% field gas cut proved individual well PI and incremental lift response.",
               },
               {
                 num: "03",
-                title: lang === "AZ" ? "74 AVTOMATİK TEST VƏ FİZİKİ YOXLAMA" : "74 AUTOMATED TESTS & PHYSICS CHECKS",
+                title: lang === "AZ" ? "FİZİKİ MƏHDUDİYYƏTLƏR" : "STRICT PHYSICS CONSTRAINTS",
                 desc:
                   lang === "AZ"
-                    ? "Hər quyuda yüksək quyudibi təzyiqin daha az maye demək olduğu (dQ/dPwf <= 0) məcburi qorunur. 4 'good' PTA quyusunda IARF pəncərəsi dəyişsə belə k və skin 5% daxilində sabit qalır."
-                    : "Monotonic pressure response is enforced in every well. Across the four 'good' PTA build-ups, permeability and skin stay within 5% regardless of the chosen window.",
+                    ? "dQ/dPwf <= 0 təzyiq qanunu və Bourdet radial axın sabitliyi hər quyuda məcburi qorunur."
+                    : "Monotonic dQ/dPwf <= 0 pressure response and Bourdet radial flow QC strictly enforced.",
               },
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="min-h-[320px] flex flex-col justify-between p-8 border-b md:border-b-0 md:border-r last:border-r-0 border-white/20 hover:bg-white/[0.04] transition-colors"
+                className="min-h-[260px] flex flex-col justify-between p-7 border-b md:border-b-0 md:border-r last:border-r-0 border-white/15 hover:bg-white/[0.04] transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-2xl text-cyan-400">/{item.num}</span>
-                  <ShieldCheck className="w-6 h-6 text-white/40" />
+                  <span className="font-mono text-2xl text-cyan-400 font-bold">/{item.num}</span>
+                  <ShieldCheck className="w-5 h-5 text-cyan-400/60" />
                 </div>
-                <div className="space-y-3 mt-12">
-                  <h3 className="text-xl md:text-2xl font-medium uppercase tracking-[-0.03em]">
+                <div className="space-y-2.5 mt-8">
+                  <h3 className="text-lg md:text-xl font-medium uppercase tracking-tight text-white">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-white/70 leading-relaxed">{item.desc}</p>
+                  <p className="text-xs md:text-sm text-zinc-400 leading-relaxed">{item.desc}</p>
                 </div>
               </div>
             ))}

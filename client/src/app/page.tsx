@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import gsap from "gsap";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as SliderPrimitive from "@radix-ui/react-slider";
@@ -19,6 +20,7 @@ import {
   Flame,
   Gauge,
   Home,
+  Compass,
   KeyRound,
   LogOut,
   Play,
@@ -62,6 +64,8 @@ import { apiFetch, API_URL } from "@/lib/utils";
 import { AppearanceSettings } from "@/components/AppearanceSettings";
 import { AzersilahLanding } from "@/components/AzersilahLanding";
 import { ClaudeWorkspace } from "@/components/ClaudeWorkspace";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import { RawDataUploader } from "@/components/RawDataUploader";
 import {
   AppLang,
   TRANSLATIONS,
@@ -184,6 +188,18 @@ export default function WellPerfEnterpriseApp() {
 
   // RBAC
   const [rbacOverview, setRbacOverview] = useState<any | null>(null);
+
+  // Guided Onboarding Tour
+  const [isTourOpen, setIsTourOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !showLanding && token) {
+      const tourDone = localStorage.getItem("wellperf_tour_completed");
+      if (!tourDone) {
+        setIsTourOpen(true);
+      }
+    }
+  }, [showLanding, token]);
 
   const showNotice = (text: string, type: "success" | "error" | "info" = "info") => {
     setToast({ text, type });
@@ -468,6 +484,12 @@ export default function WellPerfEnterpriseApp() {
           if (!token) {
             handleLogin("admin@socar.az");
           }
+          if (typeof window !== "undefined") {
+            const tourDone = localStorage.getItem("wellperf_tour_completed");
+            if (!tourDone) {
+              setIsTourOpen(true);
+            }
+          }
         }}
       />
     );
@@ -478,7 +500,16 @@ export default function WellPerfEnterpriseApp() {
   // ==========================================================
   if (!token || !user) {
     return (
-      <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex flex-col justify-between">
+      <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex flex-col justify-between relative overflow-hidden">
+        {/* Realistic Animated Caspian Rig Backdrop */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <img
+            src="/caspian-rig.gif"
+            alt="Caspian Offshore Rig"
+            className="w-full h-full object-cover opacity-25 filter blur-[0.5px]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--wp-canvas))] via-[rgb(var(--wp-canvas))]/85 to-[rgb(var(--wp-canvas))]/70" />
+        </div>
         <header className="w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="h-7 w-7 rounded-lg bg-cyan-500 text-zinc-950 flex items-center justify-center font-mono font-bold text-xs shadow-sm">
@@ -858,6 +889,25 @@ export default function WellPerfEnterpriseApp() {
             </div>
 
             <AppearanceSettings />
+
+            <button
+              type="button"
+              onClick={() => setIsTourOpen(true)}
+              className="inline-flex items-center h-8 gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-950/30 hover:bg-cyan-950/60 px-3 text-xs font-semibold text-cyan-300 shadow-xs transition"
+              title={lang === "AZ" ? "Sistem Bələdçisi" : lang === "RU" ? "Гид по Системе" : "System Tour"}
+            >
+              <Compass className="size-3.5 text-cyan-400" />
+              <span className="hidden md:inline">{lang === "AZ" ? "Bələdçi" : lang === "RU" ? "Гид" : "Tour"}</span>
+            </button>
+
+            <Link
+              href="/presentation"
+              className="inline-flex items-center h-8 gap-1.5 rounded-lg border border-purple-500/30 bg-purple-950/30 hover:bg-purple-950/60 px-3 text-xs font-semibold text-purple-300 shadow-xs transition"
+              title={lang === "AZ" ? "10 Slaydlıq Təqdimat" : "Pitch Deck"}
+            >
+              <FileSpreadsheet className="size-3.5 text-purple-400" />
+              <span className="hidden md:inline">{lang === "AZ" ? "Təqdimat" : "Deck"}</span>
+            </Link>
 
             <button
               type="button"
@@ -1333,14 +1383,34 @@ export default function WellPerfEnterpriseApp() {
           {/* ==================================================== */}
           {activeTab === "data" && (
             <div className="space-y-6">
-              <div>
-                <h2 className="text-base font-semibold text-zinc-100">
-                  01 · Field Sensor Telemetry, Data-Quality Checks & Event Classification
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  Per-minute data cleaned for -999.25 sentinels, duplicate/unordered timestamps, 11-minute rolling-median spikes, and ≥60-minute frozen runs.
-                </p>
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-1 bg-gradient-to-b from-sky-400 to-indigo-500 rounded-full" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-wider uppercase text-zinc-100">
+                        FIELD SENSOR TELEMETRY & DATA QC
+                      </h2>
+                      <Badge variant="outline" className="border-sky-500/30 text-sky-400 bg-sky-950/20 text-[10px] font-mono">
+                        3.93M Records
+                      </Badge>
+                      <Badge variant="outline" className="border-zinc-700 text-zinc-300 bg-zinc-900/40 text-[10px] font-mono">
+                        QC Cleaned
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
+                      11-MIN ROLLING MEDIAN FILTER · FROZEN RUN DETECTOR · SENTINEL SUPPRESSION
+                    </p>
+                  </div>
+                </div>
               </div>
+
+              {/* Raw Well Data Ingestion & Automated QC Dropzone (Application Requirement) */}
+              <RawDataUploader
+                selectedWell={selectedWell}
+                onNavigateToVFM={() => setActiveTab("vfm")}
+                onNavigateToPTA={() => setActiveTab("pta")}
+              />
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
@@ -1508,14 +1578,28 @@ export default function WellPerfEnterpriseApp() {
           {/* ==================================================== */}
           {activeTab === "vfm" && (
             <div className="space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-semibold text-zinc-100">
-                    02 · Virtual Flow Metering (Physics-Constrained BoundedRidge Regression)
-                  </h2>
-                  <p className="text-xs text-zinc-400">
-                    Per-well centered downhole pressure slope constrained negative (≤ −1/5000 psi⁻¹). Surface WHP excluded to prevent test-separator routing bias.
-                  </p>
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-1 bg-gradient-to-b from-cyan-400 to-emerald-500 rounded-full" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-wider uppercase text-zinc-100">
+                        VIRTUAL FLOW METERING
+                      </h2>
+                      <Badge variant="outline" className="border-cyan-500/30 text-cyan-400 bg-cyan-950/20 text-[10px] font-mono">
+                        BoundedRidge
+                      </Badge>
+                      <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-950/20 text-[10px] font-mono">
+                        Forward MAPE 3.72%
+                      </Badge>
+                      <Badge variant="outline" className="border-amber-500/30 text-amber-400 bg-amber-950/20 text-[10px] font-mono">
+                        Routing Bias +0.7%
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
+                      PHYSICS CONSTRAINTS: dQ/dPwf ≤ −0.0002 · WHP EXCLUDED
+                    </p>
+                  </div>
                 </div>
                 <Button
                   variant="default"
@@ -1839,14 +1923,25 @@ export default function WellPerfEnterpriseApp() {
           {/* ==================================================== */}
           {activeTab === "pta" && (
             <div className="space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-semibold text-zinc-100">
-                    03 · Automated Pressure Transient Analysis (Bourdet Derivative & Horner Semilog)
-                  </h2>
-                  <p className="text-xs text-zinc-400">
-                    Driven by VFM predicted oil rate Qo before shut-in and cumulative Np. Evaluates radial-flow stability across tolerances 0.08–0.20.
-                  </p>
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-1 bg-gradient-to-b from-emerald-400 to-cyan-500 rounded-full" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-wider uppercase text-zinc-100">
+                        PRESSURE TRANSIENT ANALYSIS
+                      </h2>
+                      <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-950/20 text-[10px] font-mono">
+                        Bourdet Derivative
+                      </Badge>
+                      <Badge variant="outline" className="border-cyan-500/30 text-cyan-400 bg-cyan-950/20 text-[10px] font-mono">
+                        Horner Semilog
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
+                      DYNAMIC Qo(VFM) · EXACT Np INTEGRATION · IARF STABILITY SCAN
+                    </p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {(bootstrap?.ptaEvents || []).map((ev: any) => {
@@ -2176,13 +2271,26 @@ export default function WellPerfEnterpriseApp() {
           {/* ==================================================== */}
           {activeTab === "gaslift" && (
             <div className="space-y-6">
-              <div>
-                <h2 className="text-base font-semibold text-zinc-100">
-                  04 · Lift-Gas Allocation Optimiser (14 June Field-Wide Natural Experiment)
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  Derived from the 14 June 2025 (10:20–15:02) simultaneous 50% lift-gas cut across all 10 wells (ΔPwf per 100 Mscf/d × PTA Oil PI).
-                </p>
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-1 bg-gradient-to-b from-amber-400 to-emerald-500 rounded-full" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-wider uppercase text-zinc-100">
+                        LIFT-GAS ALLOCATION OPTIMISER
+                      </h2>
+                      <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-950/20 text-[10px] font-mono">
+                        +$485,000 / YR
+                      </Badge>
+                      <Badge variant="outline" className="border-zinc-700 text-zinc-300 bg-zinc-900/40 text-[10px] font-mono">
+                        $0 CAPEX
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
+                      14 JUNE FIELD TEST GRADIENTS · ΔPwf × OIL PI SENSITIVITIES
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -2367,13 +2475,26 @@ export default function WellPerfEnterpriseApp() {
           {/* ==================================================== */}
           {activeTab === "export" && (
             <div className="space-y-6">
-              <div>
-                <h2 className="text-base font-semibold text-zinc-100">
-                  05 · Hackathon Deliverables & Standalone Offline HTML Reports
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  All 4 required files match the exact schema specification in task.pdf.
-                </p>
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-1 bg-gradient-to-b from-purple-400 to-emerald-500 rounded-full" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold tracking-wider uppercase text-zinc-100">
+                        OFFICIAL DELIVERABLES & AUDIT REPORTS
+                      </h2>
+                      <Badge variant="outline" className="border-purple-500/30 text-purple-400 bg-purple-950/20 text-[10px] font-mono">
+                        task.pdf Compliant
+                      </Badge>
+                      <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-950/20 text-[10px] font-mono">
+                        4 Verified Files
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
+                      STANDALONE PLOTLY HTML · CSV PORTAL SUBMISSIONS · EXCEL AUDIT WORKBOOKS
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2759,6 +2880,14 @@ export default function WellPerfEnterpriseApp() {
           )}
           </div>
         </main>
+
+        {/* Guided Introduction / Onboarding Tour */}
+        <OnboardingTour
+          isOpen={isTourOpen}
+          onClose={() => setIsTourOpen(false)}
+          lang={lang}
+          onSelectTab={(tab) => setActiveTab(tab as any)}
+        />
       </div>
     </div>
   );
