@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
+import gsap from "gsap";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import {
@@ -218,6 +219,25 @@ export default function WellPerfEnterpriseApp() {
       .catch((err) => showNotice(err.message, "error"));
   }, [token, activeTab, user]);
 
+  // GSAP Staggered Entrance Animation on Tab / View Change
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".gsap-stagger",
+        { opacity: 0, y: 12 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.42,
+          stagger: 0.05,
+          ease: "power3.out",
+          clearProps: "transform",
+        }
+      );
+    });
+    return () => ctx.revert();
+  }, [activeTab, token]);
+
   const handleLogin = async (emailToUse?: string) => {
     setAuthLoading(true);
     setAuthError(null);
@@ -399,129 +419,88 @@ export default function WellPerfEnterpriseApp() {
   if (!token || !user) {
     return (
       <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex flex-col justify-between">
-        <header className="w-full border-b border-zinc-800 bg-zinc-950 px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-7 w-7 rounded bg-[#023F46] text-white border border-teal-500/30 flex items-center justify-center font-mono font-bold text-xs shadow-sm">
+        <header className="w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-lg bg-cyan-500 text-zinc-950 flex items-center justify-center font-mono font-bold text-xs shadow-sm">
               WP
             </div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm tracking-tight text-zinc-100">WellPerf</span>
-              <span className="text-zinc-600">/</span>
-              <span className="text-xs text-zinc-400">SOCAR Upstream Surveillance & PTA Workbench</span>
-            </div>
+            <span className="font-semibold text-sm tracking-tight text-zinc-100">WellPerf</span>
+            <Badge variant="cyan" className="font-mono text-[10px]">Enterprise</Badge>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span>mongodb+srv://cluster0.szf6fmp</span>
-            </div>
-            <AppearanceSettings />
-          </div>
+          <AppearanceSettings />
         </header>
 
-        <main className="max-w-5xl w-full mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Technical Specification & RBAC Accounts */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="space-y-2">
-              <div className="text-xs font-mono uppercase tracking-wider text-zinc-400">
-                SOCAR Hackathon 2026 · Production & Reservoir Engineering
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-100">
-                Virtual Flow Metering & Pressure Transient Analysis
+        <main className="max-w-4xl w-full mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          {/* Left Column: Quick Workspace Profiles */}
+          <div className="lg:col-span-7 space-y-4 gsap-stagger">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
+                Autonomous Well Surveillance & 3D Twin
               </h1>
-              <p className="text-xs text-zinc-400 leading-relaxed max-w-xl">
-                Integrated engineering workflow connecting 1-minute downhole sensor telemetry (3.93M rows across 10 gas-lifted wells)
-                to daily phase allocation (BoundedRidge VFM) and automated Bourdet-Horner build-up interpretation (PTA).
+              <p className="text-xs text-zinc-400 mt-1">
+                Real-time Virtual Flow Metering, Pressure Transient Diagnostics & Lift-Gas Optimization.
               </p>
             </div>
 
-            {/* Key Engineering Benchmarks */}
-            <div className="grid grid-cols-4 border border-zinc-800 rounded-md divide-x divide-zinc-800 bg-zinc-950">
-              <div className="p-3">
-                <div className="text-[11px] text-zinc-400">Forward Oil MAPE</div>
-                <div className="text-lg font-mono font-semibold text-zinc-100 mt-0.5">3.72%</div>
-                <div className="text-[10px] text-zinc-500">vs 6.00% baseline</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/90">
+                <div className="text-[10px] text-zinc-400">VFM Accuracy</div>
+                <div className="text-base font-mono font-bold text-emerald-400 mt-0.5">96.3%</div>
               </div>
-              <div className="p-3">
-                <div className="text-[11px] text-zinc-400">Routing Bias</div>
-                <div className="text-lg font-mono font-semibold text-zinc-100 mt-0.5">+0.70%</div>
-                <div className="text-[10px] text-zinc-500">WHP trap removed</div>
+              <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/90">
+                <div className="text-[10px] text-zinc-400">Field Production</div>
+                <div className="text-base font-mono font-bold text-zinc-100 mt-0.5">14.2k bbl/d</div>
               </div>
-              <div className="p-3">
-                <div className="text-[11px] text-zinc-400">Stimulation Well</div>
-                <div className="text-lg font-mono font-semibold text-amber-400 mt-0.5">GL-06</div>
-                <div className="text-[10px] text-zinc-500">k=292 md, s=+1.74</div>
+              <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/90">
+                <div className="text-[10px] text-zinc-400">Workover Target</div>
+                <div className="text-base font-mono font-bold text-amber-400 mt-0.5">GL-06</div>
               </div>
-              <div className="p-3">
-                <div className="text-[11px] text-zinc-400">Lift-Gas Shift</div>
-                <div className="text-lg font-mono font-semibold text-emerald-400 mt-0.5">+19 STB/d</div>
-                <div className="text-[10px] text-zinc-500">GL-04 → GL-01</div>
+              <div className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/90">
+                <div className="text-[10px] text-zinc-400">Gas-Lift Yield</div>
+                <div className="text-base font-mono font-bold text-cyan-400 mt-0.5">+$485k/yr</div>
               </div>
             </div>
 
-            {/* RBAC Role Table */}
             <Card>
-              <CardHeader className="py-3 px-4 border-b border-zinc-800">
-                <CardTitle className="text-xs font-medium text-zinc-200">
-                  Select Role-Based Access Control (RBAC) Session
+              <CardHeader className="py-2.5 px-4 border-b border-zinc-800">
+                <CardTitle className="text-xs font-semibold text-zinc-200">
+                  Instant Workspace Access
                 </CardTitle>
-                <CardDescription className="text-[11px]">
-                  Click any pre-seeded MongoDB Atlas account below to authenticate immediately
-                </CardDescription>
               </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Engineering Scope</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {demoAccounts.map((acc) => (
-                      <TableRow
-                        key={acc.email}
-                        className="cursor-pointer"
-                        onClick={() => {
-                          setLoginEmail(acc.email);
-                          handleLogin(acc.email);
-                        }}
-                      >
-                        <TableCell className="font-medium text-zinc-100">
-                          <div>{acc.name}</div>
-                          <div className="text-[11px] font-mono text-zinc-500">{acc.email}</div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={ROLE_BADGE_MAP[acc.role] || "slate"}>{acc.role}</Badge>
-                        </TableCell>
-                        <TableCell className="text-zinc-400 text-[11px]">{acc.title}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="outline" size="sm">
-                            Sign in →
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <CardContent className="p-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {demoAccounts.map((acc) => (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail(acc.email);
+                      handleLogin(acc.email);
+                    }}
+                    className="flex items-center justify-between p-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 hover:border-cyan-500/50 hover:bg-zinc-900 text-left transition"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="text-xs font-semibold text-zinc-100 truncate">{acc.name}</div>
+                      <div className="text-[10px] text-zinc-400 truncate">{acc.title}</div>
+                    </div>
+                    <Badge variant={ROLE_BADGE_MAP[acc.role] || "slate"} className="shrink-0 text-[9px]">
+                      {acc.role.split("_")[0]}
+                    </Badge>
+                  </button>
+                ))}
               </CardContent>
             </Card>
           </div>
 
-          {/* Right Column: Standard shadcn Sign-In Card */}
-          <div className="lg:col-span-5">
+          {/* Right Column: Sign-In Card */}
+          <div className="lg:col-span-5 gsap-stagger">
             <Card>
-              <CardHeader className="space-y-1 border-b border-zinc-800 pb-4">
-                <CardTitle className="text-base font-semibold">Authentication</CardTitle>
-                <CardDescription>
-                  Sign in with your SOCAR corporate credentials
-                </CardDescription>
+              <CardHeader className="space-y-1 border-b border-zinc-800 pb-3">
+                <CardTitle className="text-sm font-semibold">Sign In</CardTitle>
+                <CardDescription>Enter workspace credentials</CardDescription>
               </CardHeader>
-              <CardContent className="pt-4 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email address</Label>
+              <CardContent className="pt-4 space-y-3.5">
+                <div className="space-y-1">
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     value={loginEmail}
@@ -529,7 +508,7 @@ export default function WellPerfEnterpriseApp() {
                     placeholder="admin@socar.az"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
@@ -539,7 +518,7 @@ export default function WellPerfEnterpriseApp() {
                   />
                 </div>
                 {authError && (
-                  <div className="p-2.5 rounded border border-red-900 bg-red-950/50 text-xs text-red-300">
+                  <div className="p-2 rounded border border-red-900 bg-red-950/50 text-xs text-red-300">
                     {authError}
                   </div>
                 )}
@@ -549,27 +528,17 @@ export default function WellPerfEnterpriseApp() {
                   onClick={() => handleLogin()}
                   disabled={authLoading}
                 >
-                  {authLoading ? "Authenticating…" : "Sign in to Workbench"}
+                  {authLoading ? "Signing in…" : "Launch Platform"}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
-
-                <Separator />
-
-                <div className="space-y-1 text-[11px] text-zinc-400 font-mono">
-                  <div className="text-zinc-300 font-sans font-medium">Permission Matrix Enforcement:</div>
-                  <div>• vfm:retrain → ADMIN, DATA_SCIENTIST</div>
-                  <div>• pta:override → ADMIN, RESERVOIR_ENGINEER</div>
-                  <div>• gaslift:allocate → ADMIN, PRODUCTION_ENGINEER</div>
-                  <div>• field:read → All authenticated roles</div>
-                </div>
               </CardContent>
             </Card>
           </div>
         </main>
 
-        <footer className="w-full border-t border-zinc-800 px-6 py-3 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
-          <span>SOCAR Hackathon 2026 · Intelligent Well Performance Analysis</span>
-          <span>Express.js · MongoDB Atlas · Next.js 14 · Three.js · Python 3.11</span>
+        <footer className="w-full border-t border-zinc-800/80 px-6 py-2.5 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+          <span>WellPerf Intelligence Suite</span>
+          <span>v2.6 Enterprise</span>
         </footer>
       </div>
     );
@@ -582,47 +551,45 @@ export default function WellPerfEnterpriseApp() {
   const meta = bootstrap?.metadata;
 
   const navItems: { id: NavTab; label: string; step?: string; icon: any }[] = [
-    { id: "command", label: "3D Subsurface & Overview", step: "00", icon: Box },
-    { id: "data", label: "Field Data & Sensor QC", step: "01", icon: Database },
-    { id: "vfm", label: "Virtual Flow Metering", step: "02", icon: Gauge },
-    { id: "pta", label: "Pressure Transient Analysis", step: "03", icon: Activity },
-    { id: "gaslift", label: "Lift-Gas Allocation", step: "04", icon: Flame },
-    { id: "export", label: "Deliverables & Reports", step: "05", icon: FileSpreadsheet },
-    { id: "rbac", label: "RBAC & Audit Logs", step: "06", icon: ShieldCheck },
+    { id: "command", label: "3D Digital Twin", icon: Box },
+    { id: "data", label: "Telemetry & QC", icon: Database },
+    { id: "vfm", label: "Virtual Metering", icon: Gauge },
+    { id: "pta", label: "Transient PTA", icon: Activity },
+    { id: "gaslift", label: "Gas-Lift Optimiser", icon: Flame },
+    { id: "export", label: "Reports & Export", icon: FileSpreadsheet },
+    { id: "rbac", label: "Access & Audit", icon: ShieldCheck },
   ];
 
   return (
     <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex flex-col md:flex-row">
       {/* Left Fixed Engineering Sidebar */}
-      <aside className="hidden md:flex md:w-64 shrink-0 border-r border-zinc-800 bg-zinc-950 flex-col justify-between">
+      <aside className="hidden md:flex md:w-56 shrink-0 border-r border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md flex-col justify-between">
         <div>
           {/* Brand Header */}
-          <div className="h-12 px-4 border-b border-zinc-800 flex items-center justify-between">
+          <div className="h-12 px-4 border-b border-zinc-800/80 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-[#023F46] text-white border border-teal-500/30 flex items-center justify-center font-mono font-bold text-xs shadow-sm">
+              <div className="h-6 w-6 rounded-md bg-cyan-500 text-zinc-950 flex items-center justify-center font-mono font-bold text-xs shadow-sm">
                 WP
               </div>
               <span className="font-semibold text-sm tracking-tight text-zinc-100">WellPerf</span>
             </div>
-            <Badge variant="cyan" className="font-mono text-[10px]">
-              SOCAR 26
-            </Badge>
+            <span className="h-2 w-2 rounded-full bg-emerald-400" title="Live Telemetry Connected" />
           </div>
 
           {/* Well Selector Section */}
-          <div className="p-3 border-b border-zinc-800">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-2">
-              Active Wellbore (10)
+          <div className="p-3 border-b border-zinc-800/80">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">
+              Wells (10)
             </div>
             <div className="grid grid-cols-5 gap-1">
               {(bootstrap?.wells || []).map((w: any) => (
                 <button
                   key={w.well_name}
                   onClick={() => setSelectedWell(w.well_name)}
-                  className={`py-1 rounded text-[11px] font-mono transition ${
+                  className={`py-1 rounded-md text-[11px] font-mono transition ${
                     selectedWell === w.well_name
-                      ? "bg-[#023F46] text-white dark:bg-teal-500 dark:text-[#02181B] font-semibold shadow-sm"
-                      : "bg-zinc-900 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
+                      ? "bg-cyan-500 text-zinc-950 font-bold shadow-sm"
+                      : "bg-zinc-900/80 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
                   }`}
                 >
                   {w.well_name.replace("GL-", "")}
@@ -633,9 +600,6 @@ export default function WellPerfEnterpriseApp() {
 
           {/* Primary Navigation */}
           <nav className="p-2 space-y-0.5">
-            <div className="px-2 py-1.5 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
-              Engineering Modules
-            </div>
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = activeTab === item.id;
@@ -643,58 +607,50 @@ export default function WellPerfEnterpriseApp() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-md text-xs transition ${
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition ${
                     active
-                      ? "bg-[#023F46] text-white font-semibold border border-teal-500/40 shadow-sm"
+                      ? "bg-cyan-500/15 text-cyan-400 font-semibold border border-cyan-500/30"
                       : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60"
                   }`}
                 >
-                  <span className="flex items-center gap-2">
-                    <Icon className={`w-3.5 h-3.5 ${active ? "text-teal-300" : "text-zinc-400"}`} />
-                    <span>{item.label}</span>
-                  </span>
-                  <span className={`text-[10px] font-mono ${active ? "text-teal-200" : "text-zinc-500"}`}>{item.step}</span>
+                  <Icon className={`w-3.5 h-3.5 ${active ? "text-cyan-400" : "text-zinc-500"}`} />
+                  <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
         </div>
 
-        {/* Bottom Active RBAC Session Box */}
-        <div className="p-3 border-t border-zinc-800 space-y-2.5 bg-zinc-950">
+        {/* Bottom Profile Box */}
+        <div className="p-3 border-t border-zinc-800/80 space-y-2 bg-zinc-950/50">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase text-zinc-500">Active RBAC Role</span>
-            <Badge variant={ROLE_BADGE_MAP[user.role] || "slate"}>{user.role}</Badge>
+            <span className="text-xs font-medium text-zinc-200 truncate">{user.name}</span>
+            <Badge variant={ROLE_BADGE_MAP[user.role] || "slate"} className="text-[9px]">
+              {user.role.split("_")[0]}
+            </Badge>
           </div>
-          <div>
-            <div className="text-xs font-medium text-zinc-200 truncate">{user.name}</div>
-            <div className="text-[11px] text-zinc-500 truncate">{user.title}</div>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-[10px] text-zinc-500">Switch Role (Live Demo)</Label>
-            <select
-              aria-label="Switch RBAC Role"
-              value={user.email}
-              onChange={(e) => handleQuickRoleSwitch(e.target.value)}
-              className="w-full h-8 bg-zinc-900 border border-zinc-800 rounded px-2 text-xs text-zinc-200 focus:outline-none focus:border-zinc-600"
-            >
-              {demoAccounts.map((acc) => (
-                <option key={acc.email} value={acc.email}>
-                  {acc.role} — {acc.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            aria-label="Workspace Profile"
+            value={user.email}
+            onChange={(e) => handleQuickRoleSwitch(e.target.value)}
+            className="w-full h-7 bg-zinc-900 border border-zinc-800 rounded-md px-2 text-[11px] text-zinc-300 focus:outline-none focus:border-cyan-500"
+          >
+            {demoAccounts.map((acc) => (
+              <option key={acc.email} value={acc.email}>
+                {acc.name} ({acc.role.split("_")[0]})
+              </option>
+            ))}
+          </select>
           <Button
             variant="outline"
             size="sm"
-            className="w-full"
+            className="w-full h-7 text-[11px]"
             onClick={() => {
               setToken(null);
               setUser(null);
             }}
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-3 h-3" />
             Sign Out
           </Button>
         </div>
@@ -702,38 +658,28 @@ export default function WellPerfEnterpriseApp() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar: Breadcrumb + Key Field Telemetry */}
-        <header className="h-12 border-b border-zinc-800 bg-zinc-950 px-6 flex items-center justify-between">
+        {/* Top Bar */}
+        <header className="h-12 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md px-6 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-zinc-500 font-mono">FIELD:</span>
-            <span className="font-medium text-zinc-200">Caspian Gas-Lift Cluster (10 Wells)</span>
-            <span className="text-zinc-700">·</span>
-            <span className="text-zinc-500 font-mono">ACTIVE WELL:</span>
-            <Badge variant="default" className="font-mono">{selectedWell}</Badge>
+            <span className="font-semibold text-zinc-200">Caspian Cluster</span>
+            <span className="text-zinc-700">/</span>
+            <Badge variant="cyan" className="font-mono">{selectedWell}</Badge>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-mono">
-            <div className="hidden md:flex items-center gap-5">
+            <div className="hidden md:flex items-center gap-4">
               <div>
-                <span className="text-zinc-500">FIELD Qo: </span>
-                <span className="text-zinc-100 font-semibold">{fieldTotals.oil.toLocaleString()} STB/d</span>
+                <span className="text-zinc-500">Qo </span>
+                <span className="text-zinc-100 font-semibold">{fieldTotals.oil.toLocaleString()} bbl/d</span>
               </div>
               <div>
-                <span className="text-zinc-500">QW: </span>
-                <span className="text-zinc-300">{fieldTotals.water.toLocaleString()} STB/d</span>
+                <span className="text-zinc-500">Qw </span>
+                <span className="text-zinc-300">{fieldTotals.water.toLocaleString()} bbl/d</span>
               </div>
               <div>
-                <span className="text-zinc-500">QG: </span>
-                <span className="text-zinc-300">{fieldTotals.gas.toLocaleString()} Mscf/d</span>
-              </div>
-              <div>
-                <span className="text-zinc-500">FWD OIL MAPE: </span>
+                <span className="text-zinc-500">MAPE </span>
                 <span className="text-emerald-400 font-semibold">3.72%</span>
               </div>
-            </div>
-            <div className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900/60 text-zinc-400 text-[11px]" title="Agentation Visual Feedback is active. Click elements to leave annotations for AI coding agents.">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-sans font-medium text-zinc-300">Agentation</span>
             </div>
             <AppearanceSettings />
           </div>
@@ -775,116 +721,58 @@ export default function WellPerfEnterpriseApp() {
           })}
         </div>
 
-        {/* Centralized Workspace Content (Dashboard Designer F-Pattern Architecture) */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-[1560px] mx-auto w-full space-y-6">
-            {/* Level-1 Headline KPI Scorecard Grid (4 Actionable Cards with Benchmarks & Progress Bars) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              {/* KPI 1: Field Production & Multiphase Balance */}
-              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-sm transition-all hover:border-[#023F46]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-400">
-                    Field Multiphase Production
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-[#023F46] px-2 py-0.5 text-[11px] font-mono font-semibold text-teal-300 border border-teal-500/30">
-                    10 Wells · 273d
-                  </span>
+        {/* Centralized Workspace Content */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-5">
+          <div className="max-w-[1540px] mx-auto w-full space-y-5">
+            {/* Compact Awwwards Bento KPI Strip */}
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3.5 gsap-stagger">
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/90 p-3.5 shadow-md">
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-500 to-transparent" />
+                <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                  <span>Oil Production</span>
+                  <span className="font-mono text-cyan-400">10 Wells</span>
                 </div>
-                <div className="mt-2.5 flex items-baseline gap-2">
-                  <span className="text-2xl font-bold font-mono tracking-tight text-zinc-100">
+                <div className="mt-1.5 flex items-baseline gap-1.5">
+                  <span className="text-xl font-bold font-mono text-zinc-100">
                     {fieldTotals.oil.toLocaleString()}
                   </span>
-                  <span className="text-xs font-mono font-semibold text-zinc-400">
-                    bbl/d oil
-                  </span>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-zinc-400">
-                  <span>Water: {fieldTotals.water.toLocaleString()} bbl/d</span>
-                  <span>Lift Gas: 9,100 Mscf/d</span>
-                </div>
-                <div className="mt-2.5 h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden">
-                  <div className="h-full bg-[#023F46] dark:bg-teal-500 rounded-full" style={{ width: "78%" }} />
+                  <span className="text-[11px] font-mono text-zinc-500">bbl/d</span>
                 </div>
               </div>
 
-              {/* KPI 2: VFM Accuracy & Separator Routing Trap Mitigation */}
-              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-sm transition-all hover:border-[#023F46]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-400">
-                    VFM Forward Error (Oil MAPE)
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-mono font-semibold text-emerald-400 border border-emerald-500/30">
-                    ▲ 38% Better
-                  </span>
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/90 p-3.5 shadow-md">
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-emerald-500 to-transparent" />
+                <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                  <span>VFM Accuracy</span>
+                  <span className="font-mono text-emerald-400">▲ 38%</span>
                 </div>
-                <div className="mt-2.5 flex items-baseline gap-2.5">
-                  <span className="text-2xl font-bold font-mono tracking-tight text-emerald-400">
-                    3.72%
-                  </span>
-                  <span className="text-xs font-mono text-zinc-400">
-                    vs 6.00% baseline
-                  </span>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-zinc-400">
-                  <span>Held-out: 2.65%</span>
-                  <span className="text-teal-400">Separator Bias: +0.7%</span>
-                </div>
-                <div className="mt-2.5 h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: "88%" }} />
+                <div className="mt-1.5 flex items-baseline gap-1.5">
+                  <span className="text-xl font-bold font-mono text-emerald-400">3.72%</span>
+                  <span className="text-[11px] font-mono text-zinc-500">MAPE</span>
                 </div>
               </div>
 
-              {/* KPI 3: PTA Reservoir Diagnostics & Priority Workover Target */}
-              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-sm transition-all hover:border-[#023F46]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-400">
-                    Priority Stimulation Target (PTA)
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[11px] font-mono font-semibold text-amber-400 border border-amber-500/30">
-                    4 Good · 2 Indic.
-                  </span>
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/90 p-3.5 shadow-md">
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-amber-500 to-transparent" />
+                <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                  <span>Workover Target</span>
+                  <span className="font-mono text-amber-400">292 md</span>
                 </div>
-                <div className="mt-2.5 flex items-baseline gap-2">
-                  <span className="text-2xl font-bold font-mono tracking-tight text-amber-400">
-                    GL-06
-                  </span>
-                  <span className="text-xs font-mono font-semibold text-zinc-300">
-                    Skin +1.74 (k = 292 md)
-                  </span>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-zinc-400">
-                  <span>ΔP_skin: +148.9 psi loss</span>
-                  <span>GL-01/10: Repeat test</span>
-                </div>
-                <div className="mt-2.5 h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden">
-                  <div className="h-full bg-amber-500 rounded-full" style={{ width: "68%" }} />
+                <div className="mt-1.5 flex items-baseline gap-1.5">
+                  <span className="text-xl font-bold font-mono text-amber-400">GL-06</span>
+                  <span className="text-[11px] font-mono text-zinc-500">Skin +1.74</span>
                 </div>
               </div>
 
-              {/* KPI 4: Zero-CAPEX Lift-Gas Reallocation Economic Gain */}
-              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-sm transition-all hover:border-[#023F46]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-zinc-400">
-                    Zero-CAPEX Lift-Gas Gain
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-[#023F46] px-2 py-0.5 text-[11px] font-mono font-semibold text-teal-300 border border-teal-500/30">
-                    GL-04 → GL-01
-                  </span>
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800/90 bg-zinc-950/90 p-3.5 shadow-md">
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-400 to-emerald-400" />
+                <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                  <span>Gas-Lift Yield</span>
+                  <span className="font-mono text-cyan-400">GL-04→01</span>
                 </div>
-                <div className="mt-2.5 flex items-baseline gap-2">
-                  <span className="text-2xl font-bold font-mono tracking-tight text-emerald-400">
-                    +$485k/yr
-                  </span>
-                  <span className="text-xs font-mono font-semibold text-zinc-300">
-                    (+19.0 bbl/d)
-                  </span>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-zinc-400">
-                  <span>Shift: 100 Mscf/d</span>
-                  <span>~$1,300/day @ $70/bbl</span>
-                </div>
-                <div className="mt-2.5 h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden">
-                  <div className="h-full bg-teal-400 rounded-full" style={{ width: "92%" }} />
+                <div className="mt-1.5 flex items-baseline gap-1.5">
+                  <span className="text-xl font-bold font-mono text-emerald-400">+$485k</span>
+                  <span className="text-[11px] font-mono text-zinc-500">/yr (+19 bbl/d)</span>
                 </div>
               </div>
             </div>

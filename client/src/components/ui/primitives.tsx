@@ -8,7 +8,7 @@ export const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-md border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-sm",
+      "rounded-xl border border-zinc-800/90 bg-zinc-950/90 backdrop-blur-md text-zinc-100 shadow-lg",
       className
     )}
     {...props}
@@ -70,16 +70,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
     const variants: Record<string, string> = {
       default:
-        "bg-[#023F46] text-white dark:bg-[#0D9488] dark:text-[#02181B] font-semibold hover:opacity-90 shadow-sm border border-[#0A616D]/50",
+        "bg-cyan-500 text-zinc-950 font-semibold hover:bg-cyan-400 shadow-sm",
       cyber:
-        "bg-[#023F46] text-white dark:bg-[#0D9488] dark:text-[#02181B] font-semibold hover:opacity-90 shadow-sm border border-[#0A616D]/50",
+        "bg-cyan-500 text-zinc-950 font-semibold hover:bg-cyan-400 shadow-sm",
       secondary:
-        "bg-zinc-900 text-zinc-100 hover:bg-zinc-800/80 border border-zinc-800",
+        "bg-zinc-900 text-zinc-100 hover:bg-zinc-800 border border-zinc-800",
       outline:
         "border border-zinc-800 bg-transparent hover:bg-zinc-900 text-zinc-200",
       ghost: "hover:bg-zinc-900 text-zinc-400 hover:text-zinc-100",
       destructive:
-        "bg-red-600/15 text-red-600 dark:text-red-300 border border-red-500/40 hover:bg-red-600/25",
+        "bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25",
     };
     const sizes: Record<string, string> = {
       default: "h-9 px-3.5 py-1.5 text-xs",
@@ -112,12 +112,12 @@ export function Badge({
 }) {
   const styles: Record<string, string> = {
     default: "bg-zinc-900 text-zinc-100 border-zinc-800",
-    emerald: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-    amber: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
-    rose: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30",
-    cyan: "bg-[#023F46]/15 dark:bg-teal-500/20 text-[#023F46] dark:text-teal-300 border-[#023F46]/30 dark:border-teal-500/40",
-    purple: "bg-zinc-900 text-zinc-200 border-zinc-700",
-    slate: "bg-zinc-900 text-zinc-300 border-zinc-800",
+    emerald: "bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border-emerald-500/30",
+    amber: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+    rose: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
+    cyan: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30",
+    purple: "bg-indigo-500/15 text-indigo-400 border-indigo-500/30",
+    slate: "bg-zinc-900 text-zinc-400 border-zinc-800",
   };
   return (
     <span

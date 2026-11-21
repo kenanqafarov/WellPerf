@@ -604,7 +604,7 @@ app.get("/api/bot/status", (req, res) => {
 
 app.post("/api/bot/ask", async (req, res) => {
   try {
-    const { question } = req.body;
+    const { question, history } = req.body;
     if (!question || !String(question).trim()) {
       return res.status(400).json({ error: "Question is required." });
     }
@@ -626,12 +626,16 @@ app.post("/api/bot/ask", async (req, res) => {
       ]),
     ]);
 
-    const result = await askWellPerfBot(String(question), {
-      wells,
-      meta: meta || {},
-      ptaEvents,
-      latestPredictions,
-    });
+    const result = await askWellPerfBot(
+      String(question),
+      {
+        wells,
+        meta: meta || {},
+        ptaEvents,
+        latestPredictions,
+      },
+      Array.isArray(history) ? history : []
+    );
 
     res.json(result);
   } catch (err) {

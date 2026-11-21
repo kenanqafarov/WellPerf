@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { Badge } from "@/components/ui/primitives";
-import { Compass, RotateCw, Layers, Eye, ZoomIn, ZoomOut, Flame } from "lucide-react";
+import { Compass, RotateCw, Layers, ZoomIn, ZoomOut, Flame, Maximize2, Minimize2 } from "lucide-react";
 
 interface CaspianField3DProps {
   wells: any[];
@@ -49,12 +49,41 @@ export default function CaspianField3D({
   onSelectWell,
 }: CaspianField3DProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const [autoRotate, setAutoRotate] = useState(true);
   const [showStrata, setShowStrata] = useState(true);
   const [showFlowLines, setShowFlowLines] = useState(true);
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>("full");
-  const [zoomDistance, setZoomDistance] = useState(44);
+  const [zoomDistance, setZoomDistance] = useState(42);
   const [hoveredWell, setHoveredWell] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) setIsFullscreen(false);
+    };
+    const onFsChange = () => {
+      if (!document.fullscreenElement) setIsFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("fullscreenchange", onFsChange);
+    };
+  }, [isFullscreen]);
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      setIsFullscreen(true);
+      wrapperRef.current?.requestFullscreen?.().catch(() => {});
+    } else {
+      setIsFullscreen(false);
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    }
+  };
 
   const autoRotateRef = useRef(autoRotate);
   autoRotateRef.current = autoRotate;
@@ -72,10 +101,9 @@ export default function CaspianField3D({
     const height = container.clientHeight || 480;
 
     const scene = new THREE.Scene();
-    const isLight = document.documentElement.classList.contains("light");
-    const bgHex = isLight ? 0x052e34 : 0x11172e;
+    const bgHex = 0x07090e;
     scene.background = new THREE.Color(bgHex);
-    scene.fog = new THREE.FogExp2(bgHex, 0.0085);
+    scene.fog = new THREE.FogExp2(bgHex, 0.008);
 
     const camera = new THREE.PerspectiveCamera(44, width / height, 0.1, 600);
     camera.position.set(0, 13, 44);
@@ -762,50 +790,55 @@ export default function CaspianField3D({
   const activeTraj = WELL_TRAJECTORIES[activeWellName] || WELL_TRAJECTORIES["GL-01"];
 
   return (
-    <div className="relative w-full h-[460px] sm:h-[510px] rounded-lg overflow-hidden border border-zinc-800 bg-[#11172E] shadow-lg">
+    <div
+      ref={wrapperRef}
+      className={
+        isFullscreen
+          ? "fixed inset-0 z-[9999] w-screen h-screen bg-[#07090e] overflow-hidden"
+          : "relative w-full h-[460px] sm:h-[510px] rounded-xl overflow-hidden border border-zinc-800 bg-[#07090e] shadow-2xl"
+      }
+    >
+      {/* Awwwards / Drone-Command Corner Telemetry Brackets */}
+      <div className="pointer-events-none absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-cyan-500/50 z-10" />
+      <div className="pointer-events-none absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-cyan-500/50 z-10" />
+      <div className="pointer-events-none absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-cyan-500/50 z-10" />
+      <div className="pointer-events-none absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-cyan-500/50 z-10" />
+
       {/* Three.js WebGL Mount */}
       <div ref={mountRef} className="w-full h-full" />
 
-      {/* Top Left Overlay HUD */}
-      <div className="absolute top-3 left-3 pointer-events-none flex flex-col gap-1.5 max-w-[65%]">
-        <div className="flex items-center gap-2.5 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 px-3 py-2 rounded-lg shadow-md">
-          <Compass className="w-4 h-4 text-teal-400 shrink-0" />
-          <div className="min-w-0">
-            <div className="text-xs font-bold tracking-tight text-zinc-100 truncate">
-              Caspian 3D Offshore Jacket, Directional Wellbores & Darcy Reservoir Twin
-            </div>
-            <div className="text-[10px] text-zinc-400 font-mono truncate">
-              10 Deviated Wells · GLV Mandrels · 5 Anticline Horizons · Fault Seal · IARF Waves
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          <Badge variant="cyan">Focus: {activeWellName}</Badge>
-          <Badge variant="emerald">IARF Good (4)</Badge>
-          <Badge variant="amber">GL-06 Skin +1.74</Badge>
-          <Badge variant="rose">GL-04 High Gas Donor</Badge>
+      {/* Top Left Compact HUD */}
+      <div className="absolute top-3.5 left-3.5 pointer-events-none flex flex-col gap-1.5">
+        <div className="flex items-center gap-2 bg-zinc-950/85 backdrop-blur-md border border-zinc-800/90 px-3 py-1.5 rounded-lg">
+          <Compass className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <span className="text-xs font-semibold tracking-tight text-zinc-100">
+            3D Field Twin
+          </span>
+          <span className="text-[10px] font-mono text-cyan-400 border-l border-zinc-800 pl-2">
+            {activeWellName} · {activeTraj.tvd.toLocaleString()} ft
+          </span>
         </div>
       </div>
 
-      {/* Top Right Camera Presets & Layer Controls */}
-      <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
-        <div className="flex flex-wrap items-center justify-end gap-1 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 p-1 rounded-lg">
+      {/* Top Right Camera Presets, Layers & Fullscreen */}
+      <div className="absolute top-3.5 right-3.5 flex flex-wrap items-center justify-end gap-1.5">
+        <div className="flex items-center gap-0.5 bg-zinc-950/85 backdrop-blur-md border border-zinc-800/90 p-1 rounded-lg">
           {(
             [
-              { id: "full", label: "Full Field" },
-              { id: "platform", label: "Topside & Jacket" },
-              { id: "reservoir", label: "Pay Zone" },
-              { id: "well", label: "Focus Well" },
+              { id: "full", label: "3D Twin" },
+              { id: "platform", label: "Rig" },
+              { id: "reservoir", label: "Reservoir" },
+              { id: "well", label: "Target" },
             ] as const
           ).map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => setCameraPreset(p.id)}
-              className={`px-2 py-1 rounded text-[10px] font-mono font-semibold transition ${
+              className={`px-2 py-1 rounded-md text-[10px] font-mono font-semibold transition ${
                 cameraPreset === p.id
-                  ? "bg-[#023F46] text-white border border-teal-400/40"
-                  : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900"
+                  ? "bg-cyan-500 text-zinc-950 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-100"
               }`}
             >
               {p.label}
@@ -813,48 +846,42 @@ export default function CaspianField3D({
           ))}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 bg-zinc-950/85 backdrop-blur-md border border-zinc-800/90 p-1 rounded-lg">
           <button
             type="button"
             onClick={() => setAutoRotate(!autoRotate)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-medium border transition ${
-              autoRotate
-                ? "bg-[#023F46] border-teal-500/40 text-white"
-                : "bg-zinc-950/90 border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            title="Toggle Orbit"
+            className={`px-2 py-1 rounded-md text-[10px] font-mono font-medium transition ${
+              autoRotate ? "bg-zinc-800 text-cyan-400" : "text-zinc-400 hover:text-zinc-100"
             }`}
           >
             <RotateCw className="w-3 h-3" />
-            <span>{autoRotate ? "Orbit: ON" : "Orbit: OFF"}</span>
           </button>
           <button
             type="button"
             onClick={() => setShowStrata(!showStrata)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-medium border transition ${
-              showStrata
-                ? "bg-[#023F46] border-teal-500/40 text-white"
-                : "bg-zinc-950/90 border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            title="Toggle Seismic Strata"
+            className={`px-2 py-1 rounded-md text-[10px] font-mono font-medium transition ${
+              showStrata ? "bg-zinc-800 text-cyan-400" : "text-zinc-400 hover:text-zinc-100"
             }`}
           >
             <Layers className="w-3 h-3" />
-            <span>Strata</span>
           </button>
           <button
             type="button"
             onClick={() => setShowFlowLines(!showFlowLines)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-mono font-medium border transition ${
-              showFlowLines
-                ? "bg-[#023F46] border-teal-500/40 text-white"
-                : "bg-zinc-950/90 border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            title="Toggle Flow Stream"
+            className={`px-2 py-1 rounded-md text-[10px] font-mono font-medium transition ${
+              showFlowLines ? "bg-zinc-800 text-cyan-400" : "text-zinc-400 hover:text-zinc-100"
             }`}
           >
             <Flame className="w-3 h-3" />
-            <span>Multiphase</span>
           </button>
           <button
             type="button"
             title="Zoom In"
             onClick={() => setZoomDistance((d) => Math.max(18, d - 5))}
-            className="p-1 rounded border bg-zinc-950/90 border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            className="p-1 rounded-md text-zinc-400 hover:text-zinc-100"
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
@@ -862,25 +889,33 @@ export default function CaspianField3D({
             type="button"
             title="Zoom Out"
             onClick={() => setZoomDistance((d) => Math.min(70, d + 5))}
-            className="p-1 rounded border bg-zinc-950/90 border-zinc-800 text-zinc-300 hover:bg-zinc-900"
+            className="p-1 rounded-md text-zinc-400 hover:text-zinc-100"
           >
             <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            title={isFullscreen ? "Exit Fullscreen (ESC)" : "Full Screen 3D"}
+            onClick={toggleFullscreen}
+            className="p-1 rounded-md bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500 hover:text-zinc-950 transition"
+          >
+            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
 
-      {/* Bottom Well Selector Bar & Live Directional Telemetry */}
-      <div className="absolute bottom-3 inset-x-3 flex flex-wrap items-center justify-between gap-2 bg-zinc-950/95 backdrop-blur-md border border-zinc-800 px-3 py-2 rounded-lg shadow-lg">
+      {/* Bottom Well Selector Bar & Live Telemetry */}
+      <div className="absolute bottom-3.5 inset-x-3.5 flex flex-wrap items-center justify-between gap-2 bg-zinc-950/90 backdrop-blur-md border border-zinc-800/90 px-3 py-2 rounded-xl">
         <div className="flex flex-wrap items-center gap-1">
           {Object.keys(WELL_TRAJECTORIES).map((w) => (
             <button
               key={w}
               type="button"
               onClick={() => onSelectWell(w)}
-              className={`px-2 py-0.5 rounded text-[11px] font-mono font-semibold transition ${
+              className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold transition ${
                 selectedWell === w
-                  ? "bg-[#023F46] text-white border border-teal-400/50 shadow-sm"
-                  : "bg-zinc-900 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
+                  ? "bg-cyan-500 text-zinc-950 shadow-sm"
+                  : "bg-zinc-900/80 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
               }`}
             >
               {w}
@@ -890,28 +925,20 @@ export default function CaspianField3D({
 
         <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono">
           <div>
-            <span className="text-zinc-500">WELL: </span>
-            <span className="font-bold text-zinc-100">{activeWellName}</span>
-          </div>
-          <div>
-            <span className="text-zinc-500">TVD: </span>
-            <span className="text-zinc-200">{activeTraj.tvd.toLocaleString()} ft</span>
-          </div>
-          <div>
-            <span className="text-zinc-500">Qo: </span>
+            <span className="text-zinc-500">Qo </span>
             <span className="text-emerald-400 font-semibold">
-              {Math.round(activePred?.oil_rate_stbd || 1420).toLocaleString()} STB/d
+              {Math.round(activePred?.oil_rate_stbd || 1420).toLocaleString()} bbl/d
             </span>
           </div>
           <div>
-            <span className="text-zinc-500">WC: </span>
-            <span className="text-zinc-300">
+            <span className="text-zinc-500">WC </span>
+            <span className="text-zinc-200">
               {(((activePred?.water_cut_frac || 0.32) as number) * 100).toFixed(1)}%
             </span>
           </div>
           {activePta?.properties && (
             <div>
-              <span className="text-zinc-500">SKIN: </span>
+              <span className="text-zinc-500">SKIN </span>
               <span
                 className={
                   activePta.properties.skin > 1

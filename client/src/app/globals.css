@@ -5,36 +5,36 @@
 @layer base {
   :root,
   html.light {
-    /* 60-30-10 LIGHT MODE: 60% #c1eaec Background, 30% Soft Aqua-White Cards, 10% Petrol Blue #023F46 */
-    --wp-canvas: 193 234 236;
-    --wp-z-950: 236 250 251;
-    --wp-z-900: 173 221 224;
-    --wp-z-800: 136 196 200;
-    --wp-z-700: 95 164 170;
-    --wp-z-600: 62 132 139;
-    --wp-z-500: 38 105 112;
-    --wp-z-400: 19 84 92;
-    --wp-z-300: 9 72 80;
-    --wp-z-200: 4 66 73;
-    --wp-z-100: 2 63 70;
-    --wp-z-50: 1 42 47;
+    /* Awwwards Clean Studio Light Palette */
+    --wp-canvas: 243 245 248;
+    --wp-z-950: 255 255 255;
+    --wp-z-900: 241 245 249;
+    --wp-z-800: 226 232 240;
+    --wp-z-700: 148 163 184;
+    --wp-z-600: 100 116 139;
+    --wp-z-500: 71 85 105;
+    --wp-z-400: 51 65 85;
+    --wp-z-300: 30 41 59;
+    --wp-z-200: 15 23 42;
+    --wp-z-100: 9 13 22;
+    --wp-z-50: 2 6 23;
     --radius: 0.75rem;
   }
 
   html.dark {
-    /* 60-30-10 DARK MODE: 60% #11172E Background, 30% Deep Navy-Petrol Surface, 10% Petrol #023F46 & Teal Accent */
-    --wp-canvas: 17 23 46;
-    --wp-z-950: 22 30 58;
-    --wp-z-900: 29 40 74;
-    --wp-z-800: 45 60 104;
-    --wp-z-700: 2 63 70;
-    --wp-z-600: 94 114 158;
-    --wp-z-500: 134 153 192;
-    --wp-z-400: 172 188 219;
-    --wp-z-300: 206 217 238;
-    --wp-z-200: 230 236 248;
-    --wp-z-100: 245 248 254;
-    --wp-z-50: 252 253 255;
+    /* Dribbble / Awwwards Industrial Command Dark Palette (Obsidian Carbon + Electric Cyan/Emerald) */
+    --wp-canvas: 8 10 15;
+    --wp-z-950: 14 17 24;
+    --wp-z-900: 21 26 36;
+    --wp-z-800: 33 41 56;
+    --wp-z-700: 51 65 85;
+    --wp-z-600: 100 116 139;
+    --wp-z-500: 148 163 184;
+    --wp-z-400: 186 199 218;
+    --wp-z-300: 214 223 237;
+    --wp-z-200: 235 240 248;
+    --wp-z-100: 248 250 252;
+    --wp-z-50: 255 255 255;
     --radius: 0.75rem;
   }
 }
