@@ -2387,6 +2387,28 @@ export default function WellPerfEnterpriseApp() {
                   </CardHeader>
                   <CardContent className="pt-4 space-y-2.5">
                     <a
+                      href={`${API_URL}/exports/download/vfm_daily_predictions.csv`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        recordExportLog({
+                          filename: "vfm_daily_predictions.csv",
+                          format: "CSV",
+                          module: "DELIVERABLES",
+                          sizeKb: "126.8 KB",
+                          user: user.email,
+                          downloadUrl: `${API_URL}/exports/download/vfm_daily_predictions.csv`,
+                        })
+                      }
+                      className="flex items-center justify-between p-3 rounded-lg bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-500 transition shadow-sm"
+                    >
+                      <span className="flex items-center gap-2 font-mono">
+                        <FileSpreadsheet className="w-4 h-4" />
+                        vfm_daily_predictions.csv (Portal Official CSV)
+                      </span>
+                      <Download className="w-3.5 h-3.5" />
+                    </a>
+                    <a
                       href={`${API_URL}/exports/download/vfm_daily_predictions.xlsx`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -2435,10 +2457,54 @@ export default function WellPerfEnterpriseApp() {
                     <Badge variant="default" className="w-fit mb-1 font-mono">Phase 2 · PTA</Badge>
                     <CardTitle className="text-sm">Automated PTA Deliverables</CardTitle>
                     <CardDescription>
-                      Horner slope, skin, effective oil permeability (md), ΔPskin (psi), IARF quality ratings, and all diagnostic curves for 6 shut-ins.
+                      Portal exact 6 columns: Well, shut_in_time, Horner slope, Permeability (k), Skin and ΔP Skin for all 6 shut-ins.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-4 space-y-2.5">
+                    <a
+                      href={`${API_URL}/exports/download/pta_submission.xlsx`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        recordExportLog({
+                          filename: "pta_submission.xlsx",
+                          format: "XLSX",
+                          module: "DELIVERABLES",
+                          sizeKb: "14.2 KB",
+                          user: user.email,
+                          downloadUrl: `${API_URL}/exports/download/pta_submission.xlsx`,
+                        })
+                      }
+                      className="flex items-center justify-between p-3 rounded-lg bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-500 transition shadow-sm"
+                    >
+                      <span className="flex items-center gap-2 font-mono">
+                        <FileSpreadsheet className="w-4 h-4" />
+                        pta_submission.xlsx (Portal Exact 6-Col Excel)
+                      </span>
+                      <Download className="w-3.5 h-3.5" />
+                    </a>
+                    <a
+                      href={`${API_URL}/exports/download/pta_submission.csv`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        recordExportLog({
+                          filename: "pta_submission.csv",
+                          format: "CSV",
+                          module: "DELIVERABLES",
+                          sizeKb: "1.4 KB",
+                          user: user.email,
+                          downloadUrl: `${API_URL}/exports/download/pta_submission.csv`,
+                        })
+                      }
+                      className="flex items-center justify-between p-3 rounded-lg bg-teal-600 text-white font-semibold text-xs hover:bg-teal-500 transition shadow-sm"
+                    >
+                      <span className="flex items-center gap-2 font-mono">
+                        <FileSpreadsheet className="w-4 h-4" />
+                        pta_submission.csv (Portal Exact 6-Col CSV)
+                      </span>
+                      <Download className="w-3.5 h-3.5" />
+                    </a>
                     <a
                       href={`${API_URL}/exports/download/pta_reservoir_properties.xlsx`}
                       target="_blank"
@@ -2457,7 +2523,7 @@ export default function WellPerfEnterpriseApp() {
                     >
                       <span className="flex items-center gap-2 font-mono">
                         <FileSpreadsheet className="w-4 h-4" />
-                        pta_reservoir_properties.xlsx
+                        pta_reservoir_properties.xlsx (Full 34-Col Audit)
                       </span>
                       <Download className="w-3.5 h-3.5" />
                     </a>

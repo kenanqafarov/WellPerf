@@ -648,7 +648,11 @@ app.post("/api/bot/ask", async (req, res) => {
 // ========================
 
 const ALLOWED_OUTPUTS = {
+  "vfm_daily_predictions.csv": "text/csv; charset=utf-8",
   "vfm_daily_predictions.xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "pta_submission.csv": "text/csv; charset=utf-8",
+  "pta_submission.xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "pta_reservoir_properties.csv": "text/csv; charset=utf-8",
   "pta_reservoir_properties.xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "vfm_report.html": "text/html",
   "pta_report.html": "text/html",
