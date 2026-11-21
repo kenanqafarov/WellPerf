@@ -592,9 +592,9 @@ export default function WellPerfEnterpriseApp() {
   ];
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex">
+    <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex flex-col md:flex-row">
       {/* Left Fixed Engineering Sidebar */}
-      <aside className="w-60 shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col justify-between">
+      <aside className="hidden md:flex md:w-64 shrink-0 border-r border-zinc-800 bg-zinc-950 flex-col justify-between">
         <div>
           {/* Brand Header */}
           <div className="h-12 px-4 border-b border-zinc-800 flex items-center justify-between">
@@ -754,51 +754,140 @@ export default function WellPerfEnterpriseApp() {
           </div>
         )}
 
-        {/* Workspace Content */}
-        <main className="flex-1 p-6 space-y-6 overflow-y-auto">
-          {/* Metric Summary Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 border border-zinc-800 rounded-md divide-y sm:divide-y-0 sm:divide-x divide-zinc-800 bg-zinc-950">
-            <div className="p-3.5">
-              <div className="text-[11px] text-zinc-400">Field Oil Rate (Jan–Sep)</div>
-              <div className="text-lg font-mono font-semibold text-zinc-100 mt-1">
-                {fieldTotals.oil.toLocaleString()} <span className="text-xs font-normal text-zinc-500">STB/d</span>
+        {/* Mobile Navigation Strip */}
+        <div className="flex md:hidden items-center gap-1.5 overflow-x-auto px-4 py-2 border-b border-zinc-800 bg-zinc-950">
+          {navItems.map((item) => {
+            const active = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveTab(item.id)}
+                className={`shrink-0 px-2.5 py-1.5 rounded-md text-xs font-medium transition ${
+                  active
+                    ? "bg-[#023F46] text-white border border-teal-400/40"
+                    : "bg-zinc-900 text-zinc-400"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Centralized Workspace Content (Dashboard Designer F-Pattern Architecture) */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="max-w-[1560px] mx-auto w-full space-y-6">
+            {/* Level-1 Headline KPI Scorecard Grid (4 Actionable Cards with Benchmarks & Progress Bars) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              {/* KPI 1: Field Production & Multiphase Balance */}
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-sm transition-all hover:border-[#023F46]">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-400">
+                    Field Multiphase Production
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[#023F46] px-2 py-0.5 text-[11px] font-mono font-semibold text-teal-300 border border-teal-500/30">
+                    10 Wells · 273d
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-baseline gap-2">
+                  <span className="text-2xl font-bold font-mono tracking-tight text-zinc-100">
+                    {fieldTotals.oil.toLocaleString()}
+                  </span>
+                  <span className="text-xs font-mono font-semibold text-zinc-400">
+                    bbl/d oil
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                  <span>Water: {fieldTotals.water.toLocaleString()} bbl/d</span>
+                  <span>Lift Gas: 9,100 Mscf/d</span>
+                </div>
+                <div className="mt-2.5 h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden">
+                  <div className="h-full bg-[#023F46] dark:bg-teal-500 rounded-full" style={{ width: "78%" }} />
+                </div>
               </div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">10 wells · 273 days</div>
-            </div>
-            <div className="p-3.5">
-              <div className="text-[11px] text-zinc-400">VFM Oil MAPE (Held / Fwd)</div>
-              <div className="text-lg font-mono font-semibold text-emerald-400 mt-1">
-                2.65% <span className="text-zinc-600">/</span> 3.72%
+
+              {/* KPI 2: VFM Accuracy & Separator Routing Trap Mitigation */}
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-sm transition-all hover:border-[#023F46]">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-400">
+                    VFM Forward Error (Oil MAPE)
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-mono font-semibold text-emerald-400 border border-emerald-500/30">
+                    ▲ 38% Better
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-baseline gap-2.5">
+                  <span className="text-2xl font-bold font-mono tracking-tight text-emerald-400">
+                    3.72%
+                  </span>
+                  <span className="text-xs font-mono text-zinc-400">
+                    vs 6.00% baseline
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                  <span>Held-out: 2.65%</span>
+                  <span className="text-teal-400">Separator Bias: +0.7%</span>
+                </div>
+                <div className="mt-2.5 h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: "88%" }} />
+                </div>
               </div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">85 LOTO / 55 Forward tests</div>
-            </div>
-            <div className="p-3.5">
-              <div className="text-[11px] text-zinc-400">Test-Day Routing Bias</div>
-              <div className="text-lg font-mono font-semibold text-zinc-100 mt-1">+0.70%</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Reduced from −9.0% WHP trap</div>
-            </div>
-            <div className="p-3.5">
-              <div className="text-[11px] text-zinc-400">PTA Build-Up Quality</div>
-              <div className="text-lg font-mono font-semibold text-zinc-100 mt-1">
-                4 Good <span className="text-zinc-600">/</span> 2 Indic.
+
+              {/* KPI 3: PTA Reservoir Diagnostics & Priority Workover Target */}
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-sm transition-all hover:border-[#023F46]">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-400">
+                    Priority Stimulation Target (PTA)
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 px-2 py-0.5 text-[11px] font-mono font-semibold text-amber-400 border border-amber-500/30">
+                    4 Good · 2 Indic.
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-baseline gap-2">
+                  <span className="text-2xl font-bold font-mono tracking-tight text-amber-400">
+                    GL-06
+                  </span>
+                  <span className="text-xs font-mono font-semibold text-zinc-300">
+                    Skin +1.74 (k = 292 md)
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                  <span>ΔP_skin: +148.9 psi loss</span>
+                  <span>GL-01/10: Repeat test</span>
+                </div>
+                <div className="mt-2.5 h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden">
+                  <div className="h-full bg-amber-500 rounded-full" style={{ width: "68%" }} />
+                </div>
               </div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Tolerance sweep 0.08–0.20</div>
-            </div>
-            <div className="p-3.5">
-              <div className="text-[11px] text-zinc-400">Stimulation Candidate</div>
-              <div className="text-lg font-mono font-semibold text-amber-400 mt-1">
-                GL-06 <span className="text-xs font-normal text-zinc-400">(s = +1.74)</span>
+
+              {/* KPI 4: Zero-CAPEX Lift-Gas Reallocation Economic Gain */}
+              <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4 shadow-sm transition-all hover:border-[#023F46]">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-400">
+                    Zero-CAPEX Lift-Gas Gain
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[#023F46] px-2 py-0.5 text-[11px] font-mono font-semibold text-teal-300 border border-teal-500/30">
+                    GL-04 → GL-01
+                  </span>
+                </div>
+                <div className="mt-2.5 flex items-baseline gap-2">
+                  <span className="text-2xl font-bold font-mono tracking-tight text-emerald-400">
+                    +$485k/yr
+                  </span>
+                  <span className="text-xs font-mono font-semibold text-zinc-300">
+                    (+19.0 bbl/d)
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                  <span>Shift: 100 Mscf/d</span>
+                  <span>~$1,300/day @ $70/bbl</span>
+                </div>
+                <div className="mt-2.5 h-1.5 w-full rounded-full bg-zinc-900 overflow-hidden">
+                  <div className="h-full bg-teal-400 rounded-full" style={{ width: "92%" }} />
+                </div>
               </div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">ko = 291.7 md · ΔPskin 23.3 psi</div>
             </div>
-            <div className="p-3.5">
-              <div className="text-[11px] text-zinc-400">Lift-Gas Reallocation</div>
-              <div className="text-lg font-mono font-semibold text-emerald-400 mt-1">
-                +19.0 STB/d
-              </div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">GL-04 → GL-01 ($485k/yr)</div>
-            </div>
-          </div>
 
           {/* ==================================================== */}
           {/* MODULE 00: 3D SUBSURFACE & OVERVIEW                  */}
@@ -2224,6 +2313,7 @@ export default function WellPerfEnterpriseApp() {
               </div>
             </div>
           )}
+          </div>
         </main>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AgentationWrapper } from "@/components/AgentationWrapper";
+import { WellPerfBot } from "@/components/WellPerfBot";
 
 export const metadata: Metadata = {
   title: "WellPerf Enterprise | SOCAR Hackathon 2026 — VFM + PTA + 3D Digital Twin",
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 antialiased selection:bg-[#023F46] selection:text-white">
         {children}
+        <WellPerfBot />
         <AgentationWrapper />
       </body>
     </html>

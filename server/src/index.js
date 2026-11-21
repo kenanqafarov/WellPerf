@@ -27,6 +27,7 @@ const {
 } = require("./rbac");
 const { simulateVFM, recalculatePTA } = require("./physicsEngine");
 const { seedDatabase, DEMO_USERS } = require("./seed");
+const { askWellPerfBot } = require("./botEngine");
 
 const app = express();
 app.use(cors());
@@ -584,6 +585,57 @@ app.post("/api/feedback/annotations", async (req, res) => {
     res.status(201).json({ success: true, feedback: feedbackDoc });
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// ========================
+// WELLPERF AI COPILOT BOT (LOCAL + GEMINI DATA-GROUNDED)
+// ========================
+
+app.get("/api/bot/status", (req, res) => {
+  res.json({
+    active: true,
+    keyName: process.env.GEMINI_KEY_NAME || "socar",
+    projectName: process.env.GEMINI_PROJECT_NAME || "projects/927485265746",
+    projectNumber: process.env.GEMINI_PROJECT_NUMBER || "927485265746",
+    keyConfigured: Boolean(process.env.GEMINI_API_KEY),
+  });
+});
+
+app.post("/api/bot/ask", async (req, res) => {
+  try {
+    const { question } = req.body;
+    if (!question || !String(question).trim()) {
+      return res.status(400).json({ error: "Question is required." });
+    }
+
+    const [wells, meta, ptaEvents, latestPredictions] = await Promise.all([
+      WellProfile.find().sort({ well_name: 1 }).lean(),
+      FieldMetadata.findOne({ key: "socar_2026_primary" }).lean(),
+      PTAEvent.find().sort({ event_id: 1 }).lean(),
+      DailyPrediction.aggregate([
+        { $sort: { date: -1 } },
+        {
+          $group: {
+            _id: "$well_name",
+            doc: { $first: "$$ROOT" },
+          },
+        },
+        { $replaceRoot: { newRoot: "$doc" } },
+        { $sort: { well_name: 1 } },
+      ]),
+    ]);
+
+    const result = await askWellPerfBot(String(question), {
+      wells,
+      meta: meta || {},
+      ptaEvents,
+      latestPredictions,
+    });
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

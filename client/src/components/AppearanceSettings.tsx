@@ -362,17 +362,17 @@ export function AppearanceSettings() {
             <div className="flex items-center gap-1">
               <span
                 className="inline-block w-3 h-2 rounded-sm border border-zinc-700"
-                style={{ backgroundColor: resolvedDark ? "#03181C" : "#FFFFFF" }}
+                style={{ backgroundColor: resolvedDark ? "#11172E" : "#c1eaec" }}
                 title="60% Dominant Canvas"
               />
               <span
                 className="inline-block w-3 h-2 rounded-sm border border-zinc-700"
-                style={{ backgroundColor: resolvedDark ? "#023F46" : "#E8F2F3" }}
+                style={{ backgroundColor: resolvedDark ? "#161E3A" : "#ecfafa" }}
                 title="30% Secondary Surface"
               />
               <span
                 className="inline-block w-3 h-2 rounded-sm border border-zinc-700"
-                style={{ backgroundColor: resolvedDark ? "#14B8A6" : "#023F46" }}
+                style={{ backgroundColor: "#023F46" }}
                 title="10% Accent Highlight"
               />
               <span className="ml-1">60·30·10</span>
