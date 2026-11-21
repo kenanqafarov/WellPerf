@@ -17,6 +17,7 @@ const {
   DailySensor,
   PTAEvent,
   FieldMetadata,
+  AgentationFeedback,
 } = require("./models");
 const {
   ROLE_PERMISSIONS,
@@ -541,6 +542,50 @@ app.post(
     }
   }
 );
+
+// ========================
+// AGENTATION VISUAL FEEDBACK & ANNOTATIONS
+// ========================
+
+app.get("/api/feedback/annotations", async (req, res) => {
+  try {
+    const list = await AgentationFeedback.find().sort({ createdAt: -1 }).limit(50).lean();
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/feedback/annotations", async (req, res) => {
+  try {
+    const { sessionId, appName, page, output, annotations, userEmail } = req.body;
+    const feedbackDoc = await AgentationFeedback.create({
+      sessionId: sessionId || `session_${Date.now()}`,
+      appName: appName || "WellPerf Enterprise",
+      page: page || "/",
+      output: output || "",
+      annotations: annotations || [],
+      userEmail: userEmail || "engineer@socar.az",
+    });
+
+    await AuditLog.create({
+      userEmail: feedbackDoc.userEmail,
+      userName: feedbackDoc.userEmail.split("@")[0],
+      userRole: "ENGINEER",
+      action: "AGENTATION_FEEDBACK_SUBMITTED",
+      module: "AGENTATION",
+      details: {
+        annotationCount: (annotations || []).length,
+        sessionId: feedbackDoc.sessionId,
+      },
+      status: "SUCCESS",
+    });
+
+    res.status(201).json({ success: true, feedback: feedbackDoc });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
 // ========================
 // DELIVERABLE FILE DOWNLOADS

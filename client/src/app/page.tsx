@@ -725,6 +725,10 @@ export default function WellPerfEnterpriseApp() {
               <span className="text-zinc-500">FWD OIL MAPE: </span>
               <span className="text-emerald-400 font-semibold">3.72%</span>
             </div>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900/60 text-zinc-400 text-[11px]" title="Agentation Visual Feedback is active. Click elements to leave annotations for AI coding agents.">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-sans font-medium text-zinc-300">Agentation</span>
+            </div>
           </div>
         </header>
 

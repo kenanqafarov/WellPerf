@@ -129,6 +129,19 @@ const FieldMetadataSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const AgentationFeedbackSchema = new mongoose.Schema(
+  {
+    sessionId: { type: String, default: () => `session_${Date.now()}` },
+    appName: { type: String, default: "WellPerf Enterprise" },
+    page: { type: String, default: "/" },
+    output: { type: String },
+    annotations: [{ type: mongoose.Schema.Types.Mixed }],
+    userEmail: { type: String, default: "engineer@socar.az" },
+    status: { type: String, enum: ["PENDING", "IN_PROGRESS", "RESOLVED"], default: "PENDING" },
+  },
+  { timestamps: true }
+);
+
 module.exports = {
   User: mongoose.model("User", UserSchema),
   AuditLog: mongoose.model("AuditLog", AuditLogSchema),
@@ -137,4 +150,5 @@ module.exports = {
   DailySensor: mongoose.model("DailySensor", DailySensorSchema),
   PTAEvent: mongoose.model("PTAEvent", PTAEventSchema),
   FieldMetadata: mongoose.model("FieldMetadata", FieldMetadataSchema),
+  AgentationFeedback: mongoose.model("AgentationFeedback", AgentationFeedbackSchema),
 };
