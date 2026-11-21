@@ -1,4 +1,4 @@
-date,well_name,oil_rate_stbd,water_rate_stbd,gas_rate_mscfd
+timestamp,well_name,oil_rate_stbd,water_rate_stbd,gas_rate_mscfd
 2025-01-01,GL-01,1225.7,826.3,334.7
 2025-01-02,GL-01,1224.0,826.1,334.2
 2025-01-03,GL-01,1226.7,828.9,335.0
