@@ -49,8 +49,8 @@ export default function CaspianField3D({
     const height = container.clientHeight || 460;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x09090b);
-    scene.fog = new THREE.FogExp2(0x09090b, 0.011);
+    scene.background = new THREE.Color(0x031c20);
+    scene.fog = new THREE.FogExp2(0x031c20, 0.011);
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 500);
     camera.position.set(0, 14, 42);
@@ -356,7 +356,7 @@ export default function CaspianField3D({
   const activePred = latestPredictions.find((p) => p.well_name === (hoveredWell || selectedWell));
 
   return (
-    <div className="relative w-full h-[460px] rounded-md overflow-hidden border border-zinc-800 bg-[#09090b]">
+    <div className="relative w-full h-[460px] rounded-md overflow-hidden border border-zinc-800 bg-[#031c20]">
       {/* Three.js WebGL Mount */}
       <div ref={mountRef} className="w-full h-full" />
 

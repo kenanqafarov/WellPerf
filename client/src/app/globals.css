@@ -3,35 +3,62 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 222 47% 5%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 7%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 152 76% 44%;
-    --primary-foreground: 222 47% 5%;
-    --secondary: 217 32% 14%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 32% 13%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 199 89% 48%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 32% 16%;
-    --input: 217 32% 16%;
-    --ring: 152 76% 44%;
+  :root,
+  html.light {
+    /* 60-30-10 LIGHT MODE: 60% Crisp White, 30% Soft Ice-Petrol, 10% Petrol Blue #023F46 */
+    --wp-canvas: 244 248 249;
+    --wp-z-950: 255 255 255;
+    --wp-z-900: 232 242 243;
+    --wp-z-800: 198 221 224;
+    --wp-z-700: 156 193 198;
+    --wp-z-600: 112 158 164;
+    --wp-z-500: 75 123 130;
+    --wp-z-400: 45 97 104;
+    --wp-z-300: 18 76 84;
+    --wp-z-200: 5 68 75;
+    --wp-z-100: 2 63 70;
+    --wp-z-50: 1 42 47;
+    --radius: 0.75rem;
+  }
+
+  html.dark {
+    /* 60-30-10 DARK MODE: 60% Deep Petrol Night, 30% Signature Petrol #023F46, 10% Teal Highlight */
+    --wp-canvas: 3 22 26;
+    --wp-z-950: 4 33 38;
+    --wp-z-900: 2 63 70;
+    --wp-z-800: 11 85 94;
+    --wp-z-700: 21 110 121;
+    --wp-z-600: 54 136 146;
+    --wp-z-500: 92 165 174;
+    --wp-z-400: 138 196 203;
+    --wp-z-300: 182 224 229;
+    --wp-z-200: 217 242 245;
+    --wp-z-100: 240 250 251;
+    --wp-z-50: 250 254 255;
     --radius: 0.75rem;
   }
 }
 
 body {
-  background-color: #09090b;
-  color: #fafafa;
+  background-color: rgb(var(--wp-canvas));
+  color: rgb(var(--wp-z-100));
   font-feature-settings: "tnum" 1;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Light mode contrast enhancement for semantic status texts */
+html.light .text-emerald-400 {
+  color: #047857 !important;
+}
+html.light .text-amber-400 {
+  color: #b45309 !important;
+}
+html.light .text-red-400 {
+  color: #b91c1c !important;
+}
+html.light .text-sky-400 {
+  color: #023F46 !important;
 }
 
 /* Custom sleek scrollbars */

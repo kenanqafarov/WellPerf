@@ -14,8 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#09090b] text-zinc-100 antialiased selection:bg-zinc-800 selection:text-zinc-100">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 antialiased selection:bg-[#023F46] selection:text-white">
         {children}
         <AgentationWrapper />
       </body>

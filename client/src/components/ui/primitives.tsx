@@ -34,7 +34,7 @@ export const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn("font-semibold leading-none tracking-tight text-slate-100", className)}
+    className={cn("font-semibold leading-none tracking-tight text-zinc-100", className)}
     {...props}
   />
 ));
@@ -46,7 +46,7 @@ export const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-xs text-slate-400", className)}
+    className={cn("text-xs text-zinc-400", className)}
     {...props}
   />
 ));
@@ -70,16 +70,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
     const variants: Record<string, string> = {
       default:
-        "bg-zinc-100 text-zinc-900 font-medium hover:bg-zinc-200 shadow-sm",
+        "bg-[#023F46] text-white dark:bg-[#0D9488] dark:text-[#02181B] font-semibold hover:opacity-90 shadow-sm border border-[#0A616D]/50",
       cyber:
-        "bg-zinc-100 text-zinc-900 font-medium hover:bg-zinc-200 shadow-sm",
+        "bg-[#023F46] text-white dark:bg-[#0D9488] dark:text-[#02181B] font-semibold hover:opacity-90 shadow-sm border border-[#0A616D]/50",
       secondary:
-        "bg-zinc-900 text-zinc-100 hover:bg-zinc-800 border border-zinc-800",
+        "bg-zinc-900 text-zinc-100 hover:bg-zinc-800/80 border border-zinc-800",
       outline:
         "border border-zinc-800 bg-transparent hover:bg-zinc-900 text-zinc-200",
       ghost: "hover:bg-zinc-900 text-zinc-400 hover:text-zinc-100",
       destructive:
-        "bg-red-950/60 text-red-300 border border-red-900 hover:bg-red-900/50",
+        "bg-red-600/15 text-red-600 dark:text-red-300 border border-red-500/40 hover:bg-red-600/25",
     };
     const sizes: Record<string, string> = {
       default: "h-9 px-3.5 py-1.5 text-xs",
@@ -111,13 +111,13 @@ export function Badge({
   variant?: "default" | "emerald" | "amber" | "rose" | "cyan" | "purple" | "slate";
 }) {
   const styles: Record<string, string> = {
-    default: "bg-zinc-900 text-zinc-200 border-zinc-800",
-    emerald: "bg-emerald-950/60 text-emerald-400 border-emerald-900/80",
-    amber: "bg-amber-950/60 text-amber-400 border-amber-900/80",
-    rose: "bg-red-950/60 text-red-400 border-red-900/80",
-    cyan: "bg-sky-950/60 text-sky-400 border-sky-900/80",
-    purple: "bg-zinc-900 text-zinc-300 border-zinc-700",
-    slate: "bg-zinc-900 text-zinc-400 border-zinc-800",
+    default: "bg-zinc-900 text-zinc-100 border-zinc-800",
+    emerald: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+    amber: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+    rose: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30",
+    cyan: "bg-[#023F46]/15 dark:bg-teal-500/20 text-[#023F46] dark:text-teal-300 border-[#023F46]/30 dark:border-teal-500/40",
+    purple: "bg-zinc-900 text-zinc-200 border-zinc-700",
+    slate: "bg-zinc-900 text-zinc-300 border-zinc-800",
   };
   return (
     <span

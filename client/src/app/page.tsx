@@ -54,11 +54,12 @@ import {
   TableCell,
 } from "@/components/ui/primitives";
 import { apiFetch, API_URL } from "@/lib/utils";
+import { AppearanceSettings } from "@/components/AppearanceSettings";
 
 const CaspianField3D = dynamic(() => import("@/components/CaspianField3D"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[460px] rounded-md border border-zinc-800 bg-[#09090b] flex items-center justify-center text-xs font-mono text-zinc-500">
+    <div className="w-full h-[460px] rounded-md border border-zinc-800 bg-[rgb(var(--wp-canvas))] flex items-center justify-center text-xs font-mono text-zinc-500">
       Initializing 3D Subsurface Viewport…
     </div>
   ),
@@ -107,9 +108,9 @@ function ShadcnSlider({
       onValueChange={(vals) => onChange(vals[0])}
     >
       <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-zinc-800">
-        <SliderPrimitive.Range className="absolute h-full bg-zinc-200" />
+        <SliderPrimitive.Range className="absolute h-full bg-[#023F46] dark:bg-teal-400" />
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block h-3.5 w-3.5 rounded-full border border-zinc-400 bg-zinc-100 shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-300 disabled:pointer-events-none disabled:opacity-50" />
+      <SliderPrimitive.Thumb className="block h-3.5 w-3.5 rounded-full border border-[#023F46] dark:border-teal-300 bg-white shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-400 disabled:pointer-events-none disabled:opacity-50" />
     </SliderPrimitive.Root>
   );
 }
@@ -397,10 +398,10 @@ export default function WellPerfEnterpriseApp() {
   // ==========================================================
   if (!token || !user) {
     return (
-      <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col justify-between">
-        <header className="w-full border-b border-zinc-800 px-6 py-3.5 flex items-center justify-between">
+      <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex flex-col justify-between">
+        <header className="w-full border-b border-zinc-800 bg-zinc-950 px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-7 w-7 rounded bg-zinc-100 text-zinc-950 flex items-center justify-center font-mono font-bold text-xs">
+            <div className="h-7 w-7 rounded bg-[#023F46] text-white border border-teal-500/30 flex items-center justify-center font-mono font-bold text-xs shadow-sm">
               WP
             </div>
             <div className="flex items-center gap-2">
@@ -409,9 +410,12 @@ export default function WellPerfEnterpriseApp() {
               <span className="text-xs text-zinc-400">SOCAR Upstream Surveillance & PTA Workbench</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span>mongodb+srv://cluster0.szf6fmp</span>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-zinc-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span>mongodb+srv://cluster0.szf6fmp</span>
+            </div>
+            <AppearanceSettings />
           </div>
         </header>
 
@@ -588,19 +592,19 @@ export default function WellPerfEnterpriseApp() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex">
+    <div className="min-h-screen bg-[rgb(var(--wp-canvas))] text-zinc-100 flex">
       {/* Left Fixed Engineering Sidebar */}
       <aside className="w-60 shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col justify-between">
         <div>
           {/* Brand Header */}
           <div className="h-12 px-4 border-b border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-zinc-100 text-zinc-950 flex items-center justify-center font-mono font-bold text-xs">
+              <div className="h-6 w-6 rounded bg-[#023F46] text-white border border-teal-500/30 flex items-center justify-center font-mono font-bold text-xs shadow-sm">
                 WP
               </div>
               <span className="font-semibold text-sm tracking-tight text-zinc-100">WellPerf</span>
             </div>
-            <Badge variant="default" className="font-mono text-[10px]">
+            <Badge variant="cyan" className="font-mono text-[10px]">
               SOCAR 26
             </Badge>
           </div>
@@ -617,7 +621,7 @@ export default function WellPerfEnterpriseApp() {
                   onClick={() => setSelectedWell(w.well_name)}
                   className={`py-1 rounded text-[11px] font-mono transition ${
                     selectedWell === w.well_name
-                      ? "bg-zinc-100 text-zinc-950 font-semibold"
+                      ? "bg-[#023F46] text-white dark:bg-teal-500 dark:text-[#02181B] font-semibold shadow-sm"
                       : "bg-zinc-900 text-zinc-400 hover:text-zinc-100 border border-zinc-800"
                   }`}
                 >
@@ -641,15 +645,15 @@ export default function WellPerfEnterpriseApp() {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-md text-xs transition ${
                     active
-                      ? "bg-zinc-900 text-zinc-100 font-medium border border-zinc-800"
-                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50"
+                      ? "bg-[#023F46] text-white font-semibold border border-teal-500/40 shadow-sm"
+                      : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60"
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <Icon className="w-3.5 h-3.5 text-zinc-400" />
+                    <Icon className={`w-3.5 h-3.5 ${active ? "text-teal-300" : "text-zinc-400"}`} />
                     <span>{item.label}</span>
                   </span>
-                  <span className="text-[10px] font-mono text-zinc-600">{item.step}</span>
+                  <span className={`text-[10px] font-mono ${active ? "text-teal-200" : "text-zinc-500"}`}>{item.step}</span>
                 </button>
               );
             })}
@@ -708,27 +712,30 @@ export default function WellPerfEnterpriseApp() {
             <Badge variant="default" className="font-mono">{selectedWell}</Badge>
           </div>
 
-          <div className="hidden md:flex items-center gap-6 text-xs font-mono">
-            <div>
-              <span className="text-zinc-500">FIELD Qo: </span>
-              <span className="text-zinc-100 font-semibold">{fieldTotals.oil.toLocaleString()} STB/d</span>
+          <div className="flex items-center gap-4 text-xs font-mono">
+            <div className="hidden md:flex items-center gap-5">
+              <div>
+                <span className="text-zinc-500">FIELD Qo: </span>
+                <span className="text-zinc-100 font-semibold">{fieldTotals.oil.toLocaleString()} STB/d</span>
+              </div>
+              <div>
+                <span className="text-zinc-500">QW: </span>
+                <span className="text-zinc-300">{fieldTotals.water.toLocaleString()} STB/d</span>
+              </div>
+              <div>
+                <span className="text-zinc-500">QG: </span>
+                <span className="text-zinc-300">{fieldTotals.gas.toLocaleString()} Mscf/d</span>
+              </div>
+              <div>
+                <span className="text-zinc-500">FWD OIL MAPE: </span>
+                <span className="text-emerald-400 font-semibold">3.72%</span>
+              </div>
             </div>
-            <div>
-              <span className="text-zinc-500">QW: </span>
-              <span className="text-zinc-300">{fieldTotals.water.toLocaleString()} STB/d</span>
-            </div>
-            <div>
-              <span className="text-zinc-500">QG: </span>
-              <span className="text-zinc-300">{fieldTotals.gas.toLocaleString()} Mscf/d</span>
-            </div>
-            <div>
-              <span className="text-zinc-500">FWD OIL MAPE: </span>
-              <span className="text-emerald-400 font-semibold">3.72%</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900/60 text-zinc-400 text-[11px]" title="Agentation Visual Feedback is active. Click elements to leave annotations for AI coding agents.">
+            <div className="hidden lg:flex items-center gap-1.5 px-2 py-0.5 rounded border border-zinc-800 bg-zinc-900/60 text-zinc-400 text-[11px]" title="Agentation Visual Feedback is active. Click elements to leave annotations for AI coding agents.">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="font-sans font-medium text-zinc-300">Agentation</span>
             </div>
+            <AppearanceSettings />
           </div>
         </header>
 
