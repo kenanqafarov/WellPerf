@@ -62,6 +62,7 @@ export default function CaspianField3D({
   presetRef.current = cameraPreset;
   const zoomRef = useRef<number>(zoomDistance);
   zoomRef.current = zoomDistance;
+  const hoveredWellRef = useRef<string | null>(null);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -455,11 +456,10 @@ export default function CaspianField3D({
       const casingMesh = new THREE.Mesh(casingGeo, casingMat);
       casingMesh.userData = { wellName };
       world.add(casingMesh);
-      clickableMeshes.push(casingMesh);
 
       // Subsea Christmas Tree Wellhead on Seabed (y = -0.5)
       const xmasTree = new THREE.Mesh(
-        new THREE.BoxGeometry(isSelected ? 0.65 : 0.45, isSelected ? 0.75 : 0.55, isSelected ? 0.65 : 0.45),
+        new THREE.BoxGeometry(isSelected ? 0.85 : 0.65, isSelected ? 0.95 : 0.75, isSelected ? 0.85 : 0.65),
         new THREE.MeshStandardMaterial({
           color: isSelected ? 0x2dd4bf : wellColor,
           emissive: isSelected ? 0x0d9488 : 0x000000,
@@ -471,6 +471,17 @@ export default function CaspianField3D({
       xmasTree.userData = { wellName };
       world.add(xmasTree);
       clickableMeshes.push(xmasTree);
+
+      // Mid-depth pick target along trajectory for fast raycasting
+      const midPt = wellCurve.getPointAt(0.5);
+      const midTarget = new THREE.Mesh(
+        new THREE.SphereGeometry(0.65, 8, 8),
+        new THREE.MeshBasicMaterial({ visible: false })
+      );
+      midTarget.position.copy(midPt);
+      midTarget.userData = { wellName };
+      world.add(midTarget);
+      clickableMeshes.push(midTarget);
 
       // Gas-Lift Valve (GLV) Mandrels along the directional wellbore (at t = 0.38, 0.52, 0.66)
       [0.38, 0.52, 0.66].forEach((mandrelT) => {
@@ -579,10 +590,6 @@ export default function CaspianField3D({
     };
 
     const onPointerMove = (e: MouseEvent) => {
-      const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
       if (isDragging) {
         const dx = e.clientX - prevX;
         const dy = e.clientY - prevY;
@@ -590,21 +597,23 @@ export default function CaspianField3D({
         targetRotX = Math.max(-0.55, Math.min(0.65, targetRotX + dy * 0.005));
         prevX = e.clientX;
         prevY = e.clientY;
-        return;
       }
+    };
+
+    const onCanvasHover = (e: MouseEvent) => {
+      if (isDragging) return;
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(clickableMeshes);
-      if (intersects.length > 0) {
-        const wName = intersects[0].object.userData?.wellName;
-        if (wName) {
-          setHoveredWell(wName);
-          renderer.domElement.style.cursor = "pointer";
-          return;
-        }
+      const foundWell = intersects.length > 0 ? intersects[0].object.userData?.wellName || null : null;
+      if (hoveredWellRef.current !== foundWell) {
+        hoveredWellRef.current = foundWell;
+        setHoveredWell(foundWell);
       }
-      setHoveredWell(null);
-      renderer.domElement.style.cursor = "grab";
+      renderer.domElement.style.cursor = foundWell ? "pointer" : "grab";
     };
 
     const onPointerUp = (e: MouseEvent) => {
@@ -630,6 +639,7 @@ export default function CaspianField3D({
 
     const dom = renderer.domElement;
     dom.addEventListener("mousedown", onPointerDown);
+    dom.addEventListener("mousemove", onCanvasHover);
     window.addEventListener("mousemove", onPointerMove);
     window.addEventListener("mouseup", onPointerUp);
     dom.addEventListener("wheel", onWheel, { passive: false });
@@ -737,12 +747,13 @@ export default function CaspianField3D({
       resizeObserver.disconnect();
       themeObserver.disconnect();
       dom.removeEventListener("mousedown", onPointerDown);
+      dom.removeEventListener("mousemove", onCanvasHover);
       window.removeEventListener("mousemove", onPointerMove);
       window.removeEventListener("mouseup", onPointerUp);
       dom.removeEventListener("wheel", onWheel);
       renderer.dispose();
     };
-  }, [wells, latestPredictions, ptaEvents, selectedWell, showStrata, showFlowLines]);
+  }, [selectedWell, showStrata, showFlowLines, latestPredictions.length, ptaEvents.length]);
 
   const activeWellName = hoveredWell || selectedWell;
   const activeWellObj = wells.find((w) => w.well_name === activeWellName);
