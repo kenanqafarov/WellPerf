@@ -12,6 +12,41 @@
 
 ---
 
+## ⚡ Test-day workflow (main dashboard at `http://localhost:3000`)
+
+The test data (the next 3 months of high-frequency data) is uploaded in the UI and goes through
+**the same cleaning steps as training**, then the trained VFM model and the PTA engine.
+
+```bash
+# 1. Python engine (FastAPI, port 8000) — needs: pip install fastapi uvicorn python-multipart plotly
+cd engine
+python -m uvicorn api_server:app --port 8000
+
+# 2. Next.js client (port 3000)
+cd client && npm run dev
+```
+
+**Always-on:** double-click `start-wellperf.bat`. It opens two watchdog windows (engine :8000, dashboard :3000) that restart a crashed server within seconds; uploaded parts live in `engine/uploads/` and are restored — with all stages re-run — after any restart.
+
+Steps in the dashboard: **01 Data → 02 Clean & QC → 03 VFM → 04 PTA → 05 Export**.
+
+- Drop files in any order (CSV / XLSX / Parquet / ZIP); the type is detected from the columns.
+  Sensor and choke files are **appended**, so the test period can arrive part by part — re-run after each part.
+- "Training history as context" (on by default) prepends the last 3 days of training data before cleaning
+  (rolling filters, choke state, 24 h gas-lift baseline) and uses the Jan–Sep predictions for cumulative oil
+  (Horner tp). Outputs are limited to the uploaded dates.
+- Without a choke file, shut-ins are still found from the sensor signature (gas lift off + pressure build-up).
+- If well tests for the new period are uploaded, VFM error vs those tests is shown.
+- Exports: `vfm_predictions.xlsx` (sheet `predictions`: date, well_name, oil_rate_stbd, water_rate_stbd,
+  gas_rate_mscfd), `vfm_portal.csv`, `pta_results.xlsx` (Horner slope, skin, k md, ΔP skin psi),
+  `pta_portal.csv`, two offline HTML reports, or everything as one ZIP.
+- "Rehearse" buttons push a training month as a new part to practise the flow.
+
+Verified: uploading Jul–Sep 2025 raw CSV in two parts reproduces the submitted VFM file exactly (920/920 rows)
+and the GL-06 / GL-08 PTA results; a full run takes ~10 s.
+
+The previous enterprise dashboard (MongoDB / RBAC / 3D twin) is still available at `/legacy`.
+
 ## 🔐 Role-Based Access Control (RBAC) Personas
 
 All 5 enterprise personas are seeded into **MongoDB Atlas** (Password for all demo accounts: `Password123!`, or use 1-Click Persona Login / Top-Bar Role Switcher):

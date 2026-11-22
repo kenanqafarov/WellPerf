@@ -108,7 +108,7 @@ export function Badge({
   variant = "default",
   ...props
 }: React.HTMLAttributes<HTMLSpanElement> & {
-  variant?: "default" | "emerald" | "amber" | "rose" | "cyan" | "purple" | "slate";
+  variant?: "default" | "emerald" | "amber" | "rose" | "cyan" | "purple" | "slate" | "outline";
 }) {
   const styles: Record<string, string> = {
     default: "bg-zinc-900 text-zinc-100 border-zinc-800",
@@ -118,6 +118,7 @@ export function Badge({
     cyan: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30",
     purple: "bg-indigo-500/15 text-indigo-400 border-indigo-500/30",
     slate: "bg-zinc-900 text-zinc-400 border-zinc-800",
+    outline: "bg-transparent text-zinc-300 border-zinc-700",
   };
   return (
     <span
